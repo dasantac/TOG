@@ -146,10 +146,10 @@ def extract_landmarks_per_frame(row):
   # We only want the frames in the middle of each video
   ## Compute indices of the  middle frames
   length = int(cap. get(cv2.CAP_PROP_FRAME_COUNT))
-  if length < 2*NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF:
+  if length < 2*sup.NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF:
     print(f"Video {video_path} is too short!")
-  first_frame = (length // 2) - NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF
-  middle_frames = set(range(first_frame, first_frame+2*NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF))
+  first_frame = (length // 2) - sup.NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF
+  middle_frames = set(range(first_frame, first_frame+2*sup.NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF))
   ## initialize the "current frame" counter to 0
   count = 0
   

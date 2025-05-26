@@ -55,3 +55,7 @@ else:
 
 ################################## Filesystem #################################
 ###############################################################################
+
+# PH1
+NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF = 6
+NUM_FRAMES_PER_VIDEO = 2*NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF

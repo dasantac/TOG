@@ -19,6 +19,8 @@ PH1_DATA_PERFRAME_CSV = os.path.join(PH1_DATA_ROOT, 'perframe.csv')
 PH1_DATA_ACTIVE_CSV = os.path.join(PH1_DATA_ROOT, 'active.csv')
 PH1_DATA_PERVIDEO_CSV = os.path.join(PH1_DATA_ROOT, 'pervideo.csv')
 
+NUM_FRAMES_PER_VIDEO = 2*sup.NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF
+
 if os.path.exists(PH1_DATA_ROOT)==False:
   raise Exception(f"Directory {PH1_DATA_ROOT} does not exist. Please investigate") 
 else:
@@ -34,4 +36,14 @@ else:
   print(f"Directory {PH2_DATA_ROOT} exists. Continuing with execution")
 
 ################################## Filesystem #################################
+###############################################################################
+############################ Feature transformation ###########################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # Step 1: Hand transformations  # # # # # # # # # # # #
+
+import feature_transformations.hand.handheader as hand
+
+# # # # # # # # # # # # # Step 1: Hand transformations  # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+############################ Feature transformation ###########################
 ###############################################################################
