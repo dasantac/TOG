@@ -35,6 +35,52 @@ if os.path.exists(PH2_DATA_ROOT)==False:
 else:
   print(f"Directory {PH2_DATA_ROOT} exists. Continuing with execution")
 
+# Column naming
+## Applicable to both per frame and per video datasets
+video_tag_columns = ["person_id", "cycle_num", "handedness", "class_name", "class_numeric"]
+
+## Applicable only to per frame datasets
+fileid_col = ["fileid"]
+current_frame_col = ["current_frame"]
+active_hand_col = ["active_hand"]
+
+frame_hand_landmark_columns = []
+for i in range(21):
+  frame_hand_landmark_columns.append('h'+str(i)+'x')
+  frame_hand_landmark_columns.append('h'+str(i)+'y')
+  frame_hand_landmark_columns.append('h'+str(i)+'z')
+
+frame_pose_landmark_columns = []
+for i in [0, 11, 12]:
+  frame_pose_landmark_columns.append('p'+str(i)+'x')
+  frame_pose_landmark_columns.append('p'+str(i)+'y')
+  frame_pose_landmark_columns.append('p'+str(i)+'z')
+
+## Applicable only to per video dataset
+video_landmark_columns = []
+video_hand_landmark_columns = []
+video_pose_landmark_columns = []
+
+
+for k in range(sup.NUM_FRAMES_PER_VIDEO):
+  for i in range(21):
+    video_landmark_columns.append('f'+str(k)+'_h'+str(i)+'x')
+    video_landmark_columns.append('f'+str(k)+'_h'+str(i)+'y')
+    video_landmark_columns.append('f'+str(k)+'_h'+str(i)+'z')
+
+    video_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'x')
+    video_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'y')
+    video_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'z')
+
+  for i in [0, 11, 12]:
+    video_landmark_columns.append('f'+str(k)+'_p'+str(i)+'x')
+    video_landmark_columns.append('f'+str(k)+'_p'+str(i)+'y')
+    video_landmark_columns.append('f'+str(k)+'_p'+str(i)+'z')
+
+    video_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'x')
+    video_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'y')
+    video_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'z')
+
 ################################## Filesystem #################################
 ###############################################################################
 ############################ Feature transformation ###########################
