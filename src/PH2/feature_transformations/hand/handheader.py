@@ -14,6 +14,7 @@ import PH2header as ph2
 # # # # # # # # # # # # # # # # Center of Gravity # # # # # # # # # # # # # # # 
 
 from .CenterOfGravity import CenterOfGravity
+from .NormalVector import NormalVector
 
 # # # # # # # # # # # # # # # # Center of Gravity # # # # # # # # # # # # # # # 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

@@ -37,49 +37,68 @@ else:
 
 # Column naming
 ## Applicable to both per frame and per video datasets
-video_tag_columns = ["person_id", "cycle_num", "handedness", "class_name", "class_numeric"]
+tag_columns = ["person_id", "cycle_num", "handedness", "class_name", "class_numeric"]
+handedness_column = ["handedness"]
 
 ## Applicable only to per frame datasets
 fileid_col = ["fileid"]
 current_frame_col = ["current_frame"]
 active_hand_col = ["active_hand"]
 
-frame_hand_landmark_columns = []
+#/ Original landmarks
+##/ Original hand landmarks
+pf_hand_landmark_columns = []
 for i in range(21):
-  frame_hand_landmark_columns.append('h'+str(i)+'x')
-  frame_hand_landmark_columns.append('h'+str(i)+'y')
-  frame_hand_landmark_columns.append('h'+str(i)+'z')
+  pf_hand_landmark_columns.append('h'+str(i)+'x')
+  pf_hand_landmark_columns.append('h'+str(i)+'y')
+  pf_hand_landmark_columns.append('h'+str(i)+'z')
 
-frame_pose_landmark_columns = []
+##/ Original pose landmarks
+pf_pose_landmark_columns = []
 for i in [0, 11, 12]:
-  frame_pose_landmark_columns.append('p'+str(i)+'x')
-  frame_pose_landmark_columns.append('p'+str(i)+'y')
-  frame_pose_landmark_columns.append('p'+str(i)+'z')
+  pf_pose_landmark_columns.append('p'+str(i)+'x')
+  pf_pose_landmark_columns.append('p'+str(i)+'y')
+  pf_pose_landmark_columns.append('p'+str(i)+'z')
+
+#/ Mean hand position landmarks
+pf_mean_hand_columns = ["h_mean_x", "h_mean_y", "h_mean_z"]
+
+#/ v1, v2, v3 landmarks
+pf_v123_columns = ["v1x", "v1y", "v1z"]+["v2x", "v2y", "v2z"]+["v3x", "v3y", "v3z"]
 
 ## Applicable only to per video dataset
-video_landmark_columns = []
-video_hand_landmark_columns = []
-video_pose_landmark_columns = []
+pv_hand_landmark_columns = []
+pv_pose_landmark_columns = []
+pv_mean_hand_columns = []
+pv_v123_columns = []
 
 
 for k in range(sup.NUM_FRAMES_PER_VIDEO):
+  #/ Original landmarks
+  ##/ Original hand landmarks
   for i in range(21):
-    video_landmark_columns.append('f'+str(k)+'_h'+str(i)+'x')
-    video_landmark_columns.append('f'+str(k)+'_h'+str(i)+'y')
-    video_landmark_columns.append('f'+str(k)+'_h'+str(i)+'z')
+    pv_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'x')
+    pv_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'y')
+    pv_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'z')
 
-    video_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'x')
-    video_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'y')
-    video_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'z')
-
+  ##/ Original pose landmarks
   for i in [0, 11, 12]:
-    video_landmark_columns.append('f'+str(k)+'_p'+str(i)+'x')
-    video_landmark_columns.append('f'+str(k)+'_p'+str(i)+'y')
-    video_landmark_columns.append('f'+str(k)+'_p'+str(i)+'z')
+    pv_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'x')
+    pv_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'y')
+    pv_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'z')
 
-    video_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'x')
-    video_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'y')
-    video_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'z')
+  #/ Mean hand position landmarks
+  pv_mean_hand_columns.append('f'+str(k)+'_h_mean_x')
+  pv_mean_hand_columns.append('f'+str(k)+'_h_mean_y')
+  pv_mean_hand_columns.append('f'+str(k)+'_h_mean_z')
+
+  #/ v1, v2, v3 landmarks
+  for i in [1, 2, 3]:
+    pv_v123_columns.append('f'+str(k)+'_v'+str(i)+'x')
+    pv_v123_columns.append('f'+str(k)+'_v'+str(i)+'y')
+    pv_v123_columns.append('f'+str(k)+'_v'+str(i)+'z')
+
+
 
 ################################## Filesystem #################################
 ###############################################################################

@@ -20,53 +20,46 @@ import superheader as sup
 import PH2header as ph2
 
 import pandas as pd
-
+import numpy as np
 
 ###############################################################################
 ######################### Intermediary transformations ########################
 
 ### Get coordinates for A and B ###
-#/ Extract point A (which lies between points 5 and 9) coordinates
-def get_A_coordinates():
-  pass
-
-#/ Extract point B (which lies between 13 and 17) coordinates
-def get_B_coordinates():
-  pass
+def get_middlepoint_coordinates(first, second):
+  middle_point = (first + second)/2
+  return middle_point
 
 ### Get coordinates for v1 and v2 ###
-#/ Extract vector v1 (which goes from point 0 to point B) coordinates
-def get_v1_coordinates():
-  pass
-
-#/ Extract vector v2 (which goes from point 0 to point A) coordinates
-def get_v2_coordinates():
-  pass
+def get_v_coordinates(src, dst):
+  v = dst - src
+  return v
 
 ### Normalize v1 and v2 ###
 # Get the norms first
-def get_v1_norm():
-  pass
-
-def get_v2_norm():
-  pass
+def get_v_norm(v):
+  n = np.dot(v, v.T)
+  return n
 
 # Now normalize
-def normalize_v1():
-  pass
-
-def normalize_v2():
-  pass
+def normalize_v(v):
+  n = get_v_norm(v)
+  nv = v / n
+  return nv
 
 ### Get coordinates for v3 ###
 #/ Normal product of v1 and v2 gives v3
-def get_v3_coordinates():
-  pass
+def cross_product(v1, v2):
+  v3 = np.cross(v1, v2)
+  return v3
 
 #/ To normalize for handedness, we always want v3 to point "out of the palm"
 #/ Because of this, we need to invert v3 for one of the hands
-def v3_handedness():
-  pass
+def v3_handedness(v3, h):
+  # Invert if right hand
+  if h == 0:
+    v3 = -1 * v3
+  return v3
 
 ######################### Intermediary transformations ########################
 ###############################################################################
@@ -75,30 +68,28 @@ def v3_handedness():
 def NormalVector(row):
   # Inputs
   handedness = row["handedness"]
-  p0 = row.filter(regex="h0")
-  p5 = row.filter(regex="h5")
-  p9 = row.filter(regex="h9")
-  p13 = row.filter(regex="h13")
-  p17 = row.filter(regex="h17")
+  p0 = row.filter(regex="h0").to_numpy()
+  p5 = row.filter(regex="h5").to_numpy()
+  p9 = row.filter(regex="h9").to_numpy()
+  p13 = row.filter(regex="h13").to_numpy()
+  p17 = row.filter(regex="h17").to_numpy()
 
   # Step by step transformations
-  pA = get_A_coordinates(p5, p9)
-  pB = get_B_coordinates(p13, p17)
+  pA = get_middlepoint_coordinates(p5, p9)
+  pB = get_middlepoint_coordinates(p13, p17)
 
-  v1 = get_v1_coordinates(p0, pB)
-  v2 = get_v2_coordinates(p0, pA)
+  v1 = get_v_coordinates(p0, pB)
+  v2 = get_v_coordinates(p0, pA)
 
-  n1 = get_v1_norm(v1)
-  n2 = get_v2_norm(v2)
+  nv1 = normalize_v(v1)
+  nv2 = normalize_v(v2)
 
-  nv1 = normalize_v1(v1, n1)
-  nv2 = normalize_v2(v2, n2)
-
-  v3 = get_v3_coordinates(nv1, nv2)
+  v3 = cross_product(nv1, nv2)
   v3 = v3_handedness(v3, handedness)
 
   # have to change this to return as a pandas series
-  return nv1, nv2, v3
+  data = np.concatenate([nv1.flatten(), nv2.flatten(), v3.flatten()])
+  return pd.Series(data)
 
 ############################ Driver transformation ############################
 ###############################################################################
