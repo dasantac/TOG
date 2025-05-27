@@ -97,7 +97,8 @@ def NormalVector(row):
   v3 = get_v3_coordinates(nv1, nv2)
   v3 = v3_handedness(v3, handedness)
 
-  return v3
+  # have to change this to return as a pandas series
+  return nv1, nv2, v3
 
 ############################ Driver transformation ############################
 ###############################################################################
