@@ -41,7 +41,7 @@ def NormalVector(row):
   pB = ph2.get_middlepoint_coordinates(p13, p17)
 
   # MAIN ACTION
-  v1, v2, v3 = ph2.NormalVector(p0, pB, pA)
+  v1, v2, v3 = ph2.NormalVector(p0, pA, pB)
 
   # Necessary post-transformations
   v3 = ph2.v3_handedness(v3, handedness)
@@ -52,13 +52,13 @@ def NormalVector(row):
 def ChangeOfBase(row):
   # Inputs
   p0 = row.filter(regex="h0").to_numpy()
-  landmarks = row.filter(regex="h(20|1[0-9]|[0-9])([xyz])").to_numpy()
-  v1 = row.filter(regex="v1").to_numpy()
-  v2 = row.filter(regex="v2").to_numpy()
-  v3 = row.filter(regex="v3").to_numpy()
+  hand_landmarks = row.filter(regex="h(20|1[0-9]|[0-9])([xyz])").to_numpy()
+  v1 = row.filter(regex="h_v1").to_numpy()
+  v2 = row.filter(regex="h_v2").to_numpy()
+  v3 = row.filter(regex="h_v3").to_numpy()
 
   # MAIN ACTION
-  rebased = ph2.ChangeOfBase(p0, np.array([v1, v2, v3]), landmarks)
+  rebased = ph2.ChangeOfBase(p0, np.array([v1, v2, v3]), hand_landmarks)
 
   # Return as pandas series
   return pd.Series(rebased)
