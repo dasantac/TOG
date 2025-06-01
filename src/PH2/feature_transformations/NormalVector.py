@@ -1,11 +1,5 @@
 """
 Step 2: Normal Vector
-
-This file contains the helper functions to get the vector normal to the "plane
-formed by the palm of the hand.
-
-We assimilate the "plame formed by the palm of the hand" to the plane defined
-by vectors 0A and 0B. See the projects attached media.
 """
 
 # Load project's shell environment variables
@@ -19,7 +13,6 @@ sys.path.append(os.environ["PYTHONPATH"])
 import superheader as sup
 import PH2header as ph2
 
-import pandas as pd
 import numpy as np
 
 ###############################################################################
@@ -38,7 +31,7 @@ def get_v_coordinates(src, dst):
 ### Normalize v1 and v2 ###
 # Get the norms first
 def get_v_norm(v):
-  n = np.dot(v, v.T)
+  n = np.sqrt(np.dot(v, v.T))
   return n
 
 # Now normalize
@@ -56,8 +49,8 @@ def cross_product(v1, v2):
 #/ To normalize for handedness, we always want v3 to point "out of the palm"
 #/ Because of this, we need to invert v3 for one of the hands
 def v3_handedness(v3, h):
-  # Invert if right hand
-  if h == 0:
+  # Invert if left hand
+  if h == 1:
     v3 = -1 * v3
   return v3
 
@@ -65,31 +58,17 @@ def v3_handedness(v3, h):
 ###############################################################################
 ############################ Driver transformation ############################
 
-def NormalVector(row):
-  # Inputs
-  handedness = row["handedness"]
-  p0 = row.filter(regex="h0").to_numpy()
-  p5 = row.filter(regex="h5").to_numpy()
-  p9 = row.filter(regex="h9").to_numpy()
-  p13 = row.filter(regex="h13").to_numpy()
-  p17 = row.filter(regex="h17").to_numpy()
+def NormalVector(p0, pA, pB):
 
-  # Step by step transformations
-  pA = get_middlepoint_coordinates(p5, p9)
-  pB = get_middlepoint_coordinates(p13, p17)
-
-  v1 = get_v_coordinates(p0, pB)
-  v2 = get_v_coordinates(p0, pA)
+  v1 = get_v_coordinates(p0, pA)
+  v2 = get_v_coordinates(p0, pB)
 
   nv1 = normalize_v(v1)
   nv2 = normalize_v(v2)
 
   v3 = cross_product(nv1, nv2)
-  v3 = v3_handedness(v3, handedness)
 
-  # have to change this to return as a pandas series
-  data = np.concatenate([nv1.flatten(), nv2.flatten(), v3.flatten()])
-  return pd.Series(data)
+  return nv1, nv2, v3
 
 ############################ Driver transformation ############################
 ###############################################################################

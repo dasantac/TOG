@@ -35,7 +35,10 @@ if os.path.exists(PH2_DATA_ROOT)==False:
 else:
   print(f"Directory {PH2_DATA_ROOT} exists. Continuing with execution")
 
-# Column naming
+################################## Filesystem #################################
+###############################################################################
+################################ Column naming ################################
+
 ## Applicable to both per frame and per video datasets
 tag_columns = ["person_id", "cycle_num", "handedness", "class_name", "class_numeric"]
 handedness_column = ["handedness"]
@@ -66,11 +69,20 @@ pf_mean_hand_columns = ["h_mean_x", "h_mean_y", "h_mean_z"]
 #/ v1, v2, v3 landmarks
 pf_v123_columns = ["v1x", "v1y", "v1z"]+["v2x", "v2y", "v2z"]+["v3x", "v3y", "v3z"]
 
+#/ Rebased landmarks
+##/ Rebased hand landmarks
+pf_wrist_hand_landmark_columns = []
+for i in range(21):
+  pf_wrist_hand_landmark_columns.append('wh'+str(i)+'x')
+  pf_wrist_hand_landmark_columns.append('wh'+str(i)+'y')
+  pf_wrist_hand_landmark_columns.append('wh'+str(i)+'z')
+
 ## Applicable only to per video dataset
 pv_hand_landmark_columns = []
 pv_pose_landmark_columns = []
 pv_mean_hand_columns = []
 pv_v123_columns = []
+pv_wrist_hand_landmark_columns = []
 
 
 for k in range(sup.NUM_FRAMES_PER_VIDEO):
@@ -98,15 +110,25 @@ for k in range(sup.NUM_FRAMES_PER_VIDEO):
     pv_v123_columns.append('f'+str(k)+'_v'+str(i)+'y')
     pv_v123_columns.append('f'+str(k)+'_v'+str(i)+'z')
 
+  #/ Rebased landmarks
+  ##/ Rebased hand landmarks
+  for i in range(21):
+    pv_wrist_hand_landmark_columns.append('f'+str(k)+'_wh'+str(i)+'x')
+    pv_wrist_hand_landmark_columns.append('f'+str(k)+'_wh'+str(i)+'y')
+    pv_wrist_hand_landmark_columns.append('f'+str(k)+'_wh'+str(i)+'z')
 
-
-################################## Filesystem #################################
+################################ Column naming ################################
 ###############################################################################
 ############################ Feature transformation ###########################
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # Step 1: Hand transformations  # # # # # # # # # # # #
 
+from feature_transformations.CenterOfGravity import CenterOfGravity
+from feature_transformations.NormalVector import NormalVector, get_middlepoint_coordinates, v3_handedness
+from feature_transformations.ChangeOfBase import ChangeOfBase
+
 import feature_transformations.hand.handheader as hand
+import feature_transformations.pose.poseheader as pose
 
 # # # # # # # # # # # # # Step 1: Hand transformations  # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
