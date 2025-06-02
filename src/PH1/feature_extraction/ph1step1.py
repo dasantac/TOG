@@ -38,31 +38,19 @@ pose_detector = vision.PoseLandmarker.create_from_options(pose_options)
 
 # to extracted landmakrs as columns in our dataframe
 import pandas as pd
-original_df_columns = ["person_id", "cycle_num", "handedness", "class_name", \
-                       "class_numeric", "fileid", "frame_count"]
-
-hand_landmark_col_names = []
-for i in range(21):
-  hand_landmark_col_names.append('h'+str(i)+'x')
-  hand_landmark_col_names.append('h'+str(i)+'y')
-  hand_landmark_col_names.append('h'+str(i)+'z')
-pose_landmark_col_names = []
-for i in [0, 11, 12]:
-  pose_landmark_col_names.append('p'+str(i)+'x')
-  pose_landmark_col_names.append('p'+str(i)+'y')
-  pose_landmark_col_names.append('p'+str(i)+'z')
+original_df_columns = sup.tag_columns + [sup.fileid_col, sup.frame_count_col]
 
 new_column_names = original_df_columns \
   + ["first_frame", "current_frame"] \
   + ["num_candidate_hands", "current_candidate_hand", "detected_handedness"] \
   + ["confidence"] \
-  + hand_landmark_col_names \
+  + sup.pf_hand_landmark_columns \
   + ["num_candidate_poses", "current_candidate_pose"] \
-  + pose_landmark_col_names
+  + sup.pf_pose_landmark_columns
 
 ### Functions used by data preparation and/or live inference ###
 def count_frames(fileid):
-  video_path = os.path.join(ph1.RAW_DATA_ROOT, fileid)
+  video_path = os.path.join(sup.RAW_DATA_ROOT, fileid)
 
   # Read the video use OpenCV
   cap = cv2.VideoCapture(video_path)
@@ -136,7 +124,7 @@ def extract_landmarks_per_frame(row):
   results = []
 
   # Read the video use OpenCV
-  video_path = os.path.join(ph1.RAW_DATA_ROOT, row["fileid"])
+  video_path = os.path.join(sup.RAW_DATA_ROOT, row[sup.fileid_col])
   cap = cv2.VideoCapture(video_path)
 
   if not cap.isOpened():
