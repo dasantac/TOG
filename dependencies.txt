@@ -2,3 +2,5 @@
 pip install python-dotenv
 conda install anaconda::pandas
 conda install anaconda::scikit-learn
+conda install conda-forge::matplotlib
+pip install umap-learn

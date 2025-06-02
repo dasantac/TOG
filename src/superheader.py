@@ -75,14 +75,6 @@ PH3_DATA_CLEAN_W2_ROOT = os.path.join(PH3_DATA_CLEAN_ROOT, 'w2')
 PH3_DATA_CLEAN_WO2_ROOT = os.path.join(PH3_DATA_CLEAN_ROOT, 'wo2')
 PH3_DATA_RED_W2_ROOT = os.path.join(PH3_DATA_RED_ROOT, 'w2')
 PH3_DATA_RED_WO2_ROOT = os.path.join(PH3_DATA_RED_ROOT, 'wo2')
-PH3_DATA_CLEAN_W2_AH_ROOT = os.path.join(PH3_DATA_CLEAN_W2_ROOT, 'active.csv')
-PH3_DATA_CLEAN_W2_PV_ROOT = os.path.join(PH3_DATA_CLEAN_W2_ROOT, 'pervideo.csv')
-PH3_DATA_CLEAN_WO2_AH_ROOT = os.path.join(PH3_DATA_CLEAN_WO2_ROOT, 'active.csv')
-PH3_DATA_CLEAN_WO2_PV_ROOT = os.path.join(PH3_DATA_CLEAN_WO2_ROOT, 'pervideo.csv')
-PH3_DATA_RED_W2_AH_ROOT = os.path.join(PH3_DATA_RED_W2_ROOT, 'active.csv')
-PH3_DATA_RED_W2_PV_ROOT = os.path.join(PH3_DATA_RED_W2_ROOT, 'pervideo.csv')
-PH3_DATA_RED_WO2_AH_ROOT = os.path.join(PH3_DATA_RED_WO2_ROOT, 'active.csv')
-PH3_DATA_RED_WO2_PV_ROOT = os.path.join(PH3_DATA_RED_WO2_ROOT, 'pervideo.csv')
 
 ################################## Filesystem #################################
 ###############################################################################
