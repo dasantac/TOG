@@ -12,7 +12,7 @@ import TRAINheader as train
 import torch
 from torch.utils.data import TensorDataset, DataLoader, random_split
 import pandas as pd
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score
 
 
 ###############################################################################
@@ -32,7 +32,6 @@ class Arch():
 
     # score
     self.accuracy = None
-    self.f1 = None
 
 
   def _prepare_data(self):
@@ -64,10 +63,8 @@ class Arch():
     y_true = self.y_test.numpy()
 
     self.accuracy = accuracy_score(y_true, y_pred)
-    self.f1 = f1_score(y_true, y_pred, average='weighted')
     print(f"Accuracy: {self.accuracy}")
-    print(f"F1 score: {self.f1}")
-    return self.accuracy, self.f1
+    return self.accuracy
   
 ############################# Generic Architecture ############################
 ###############################################################################
