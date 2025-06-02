@@ -1,6 +1,12 @@
-# PH3
+# PH3 - python=3.10
 pip install python-dotenv
 conda install anaconda::pandas
 conda install anaconda::scikit-learn
 conda install conda-forge::matplotlib
 pip install umap-learn
+
+# TRAIN - python=3.10
+pip install python-dotenv
+conda install pytorch::pytorch
+conda install anaconda::pandas
+conda install anaconda::scikit-learn
