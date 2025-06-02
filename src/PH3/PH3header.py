@@ -31,17 +31,41 @@ if os.path.exists(sup.PH3_DATA_ROOT)==False:
 else:
   print(f"Directory {sup.PH3_DATA_ROOT} exists. Continuing with execution")
 
-if os.path.exists(sup.PH3_DATA_W2_ROOT)==False:
-  print(f"Directory {sup.PH3_DATA_W2_ROOT} does not exist. Creating it and continuing with execution")
-  os.makedirs(sup.PH3_DATA_W2_ROOT)
+if os.path.exists(sup.PH3_DATA_CLEAN_ROOT)==False:
+  print(f"Directory {sup.PH3_DATA_CLEAN_ROOT} does not exist. Creating it and continuing with execution")
+  os.makedirs(sup.PH3_DATA_CLEAN_ROOT)
 else:
-  print(f"Directory {sup.PH3_DATA_W2_ROOT} exists. Continuing with execution")
+  print(f"Directory {sup.PH3_DATA_CLEAN_ROOT} exists. Continuing with execution")
 
-if os.path.exists(sup.PH3_DATA_WO2_ROOT)==False:
-  print(f"Directory {sup.PH3_DATA_WO2_ROOT} does not exist. Creating it and continuing with execution")
-  os.makedirs(sup.PH3_DATA_WO2_ROOT)
+if os.path.exists(sup.PH3_DATA_RED_ROOT)==False:
+  print(f"Directory {sup.PH3_DATA_RED_ROOT} does not exist. Creating it and continuing with execution")
+  os.makedirs(sup.PH3_DATA_RED_ROOT)
 else:
-  print(f"Directory {sup.PH3_DATA_WO2_ROOT} exists. Continuing with execution")
+  print(f"Directory {sup.PH3_DATA_RED_ROOT} exists. Continuing with execution")
+
+if os.path.exists(sup.PH3_DATA_CLEAN_W2_ROOT)==False:
+  print(f"Directory {sup.PH3_DATA_CLEAN_W2_ROOT} does not exist. Creating it and continuing with execution")
+  os.makedirs(sup.PH3_DATA_CLEAN_W2_ROOT)
+else:
+  print(f"Directory {sup.PH3_DATA_CLEAN_W2_ROOT} exists. Continuing with execution")
+
+if os.path.exists(sup.PH3_DATA_CLEAN_WO2_ROOT)==False:
+  print(f"Directory {sup.PH3_DATA_CLEAN_WO2_ROOT} does not exist. Creating it and continuing with execution")
+  os.makedirs(sup.PH3_DATA_CLEAN_WO2_ROOT)
+else:
+  print(f"Directory {sup.PH3_DATA_CLEAN_WO2_ROOT} exists. Continuing with execution")
+
+if os.path.exists(sup.PH3_DATA_RED_W2_ROOT)==False:
+  print(f"Directory {sup.PH3_DATA_RED_W2_ROOT} does not exist. Creating it and continuing with execution")
+  os.makedirs(sup.PH3_DATA_RED_W2_ROOT)
+else:
+  print(f"Directory {sup.PH3_DATA_RED_W2_ROOT} exists. Continuing with execution")
+
+if os.path.exists(sup.PH3_DATA_RED_WO2_ROOT)==False:
+  print(f"Directory {sup.PH3_DATA_RED_WO2_ROOT} does not exist. Creating it and continuing with execution")
+  os.makedirs(sup.PH3_DATA_RED_WO2_ROOT)
+else:
+  print(f"Directory {sup.PH3_DATA_RED_WO2_ROOT} exists. Continuing with execution")
 
 ################################## Filesystem #################################
 ###############################################################################

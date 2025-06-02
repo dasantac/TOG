@@ -1,3 +1,4 @@
 # PH3
 pip install python-dotenv
 conda install anaconda::pandas
+conda install anaconda::scikit-learn
