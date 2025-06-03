@@ -26,12 +26,12 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-mediapipe_hand_landmarker_path=sup.BIN_ROOT+'/PH1/loadables/mediapipe/hand_landmarker.task'
+mediapipe_hand_landmarker_path=sup.BIN_ROOT+'/load/PH1/mediapipe/hand_landmarker.task'
 hands_base_options = python.BaseOptions(model_asset_path=mediapipe_hand_landmarker_path)
 hands_options = vision.HandLandmarkerOptions(base_options=hands_base_options, num_hands=2)
 hands_detector = vision.HandLandmarker.create_from_options(hands_options)
 
-mediapipe_pose_landmarker_path=sup.BIN_ROOT+'/PH1/loadables/mediapipe/pose_landmarker_lite.task'
+mediapipe_pose_landmarker_path=sup.BIN_ROOT+'/load/PH1/mediapipe/pose_landmarker_lite.task'
 pose_base_options = python.BaseOptions(model_asset_path=mediapipe_pose_landmarker_path)
 pose_options = vision.PoseLandmarkerOptions(base_options=pose_base_options, output_segmentation_masks=False)
 pose_detector = vision.PoseLandmarker.create_from_options(pose_options)

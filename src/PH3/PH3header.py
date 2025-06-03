@@ -13,23 +13,9 @@ import superheader as sup
 
 import os
 
-if os.path.exists(sup.PH1_DATA_ROOT)==False:
-  raise Exception(f"Directory {sup.PH1_DATA_ROOT} does not exist. Please investigate") 
-else:
-  print(f"Directory {sup.PH1_DATA_ROOT} exists. Continuing with execution")
-
-
-if os.path.exists(sup.PH2_DATA_ROOT)==False:
-  raise Exception(f"Directory {sup.PH2_DATA_ROOT} does not exist. Please investigate") 
-else:
-  print(f"Directory {sup.PH2_DATA_ROOT} exists. Continuing with execution")
-
-
-if os.path.exists(sup.PH3_DATA_ROOT)==False:
-  print(f"Directory {sup.PH3_DATA_ROOT} does not exist. Creating it and continuing with execution")
-  os.makedirs(sup.PH3_DATA_ROOT)
-else:
-  print(f"Directory {sup.PH3_DATA_ROOT} exists. Continuing with execution")
+sup.report_dir_if_not_exists(sup.PH1_DATA_ROOT)
+sup.report_dir_if_not_exists(sup.PH2_DATA_ROOT)
+sup.create_dir_if_not_exists(sup.PH3_DATA_ROOT)
 
 ################################## Filesystem #################################
 ###############################################################################
