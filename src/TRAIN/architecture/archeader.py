@@ -46,6 +46,15 @@ class Arch():
     train_size = len(dataset) - test_size
     train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
+    # For scikit-learn KNN
+    self.X_train, self.y_train = zip(*train_dataset)
+    self.X_train = torch.stack(self.X_train)
+    self.y_train = torch.stack(self.y_train)
+    self.X_test, self.y_test = zip(*test_dataset)
+    self.X_test = torch.stack(self.X_test)
+    self.y_test = torch.stack(self.y_test)
+
+    # For pytorch Transformer 
     self.train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
     self.test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
 
