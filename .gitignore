@@ -3,3 +3,7 @@
 
 # Python extras
 *__pycache__/
+
+# Local testing
+.TOG.sh
+*.nbconvert.ipynb
