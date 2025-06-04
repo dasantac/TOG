@@ -11,19 +11,14 @@ import superheader as sup
 ###############################################################################
 ################################## Filesystem #################################
 
-import os
-
-if os.path.exists(sup.PH3_DATA_ROOT)==False:
-  raise Exception(f"Directory {sup.PH3_DATA_ROOT} does not exist. Please investigate") 
-else:
-  print(f"Directory {sup.PH3_DATA_ROOT} exists. Continuing with execution")
+sup.report_dir_if_not_exists(sup.PH3_DATA_ROOT)
+sup.create_dir_if_not_exists(sup.TRAIN_BINGEN_ROOT)
 
 ################################## Filesystem #################################
 ###############################################################################
 ############################### Hyperparameters ###############################
 
-# KNN
-TRAIN_KNN_K_CANDIDATES = [k for k in range(1,32)]
+
 
 ############################### Hyperparameters ###############################
 ###############################################################################
@@ -32,10 +27,4 @@ TRAIN_KNN_K_CANDIDATES = [k for k in range(1,32)]
 import architecture.archeader as arch
 
 ################################ Architectures ################################
-###############################################################################
-################################ Training loop ################################
-
-from train_loop.train_loop import train_loop
-
-################################ Training loop ################################
 ###############################################################################
