@@ -17,15 +17,37 @@ ALL_CLASSES_LIST = big_classes + small_classes
 CLASSES_TO_NUMBERS = {ALL_CLASSES_LIST[i] : i for i in range(len(ALL_CLASSES_LIST))}
 NUMBERS_TO_CLASSES = {i : ALL_CLASSES_LIST[i] for i in range(len(ALL_CLASSES_LIST))}
 
-NUM_CLASSES = "two-classes"
-#NUM_CLASSES = "three-classes"
+#NUM_CLASSES = "two-classes"
+NUM_CLASSES = "three-classes"
+#NUM_CLASSES = "six-classes"
+#NUM_CLASSES = "ten-classes"
+#NUM_CLASSES = "numeric-classes"
+#NUM_CLASSES = "static-alpha-classes"
+#NUM_CLASSES = "static-classes"
 #NUM_CLASSES = "all-classes"
+
+print(f"\n\nChosen class grouping: {NUM_CLASSES}\n\n")
+
 if NUM_CLASSES == "all-classes":
   CLASSES_LIST = ALL_CLASSES_LIST
 elif NUM_CLASSES == "two-classes":
   CLASSES_LIST = ['a', 'b']
 elif NUM_CLASSES == "three-classes":
   CLASSES_LIST = ['a', 'b', 'c']
+elif NUM_CLASSES == "six-classes":
+  CLASSES_LIST = ['a', 'b', 'c', 'd', 'e', 'f']
+elif NUM_CLASSES == "ten-classes":
+  CLASSES_LIST = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l']
+elif NUM_CLASSES == "numeric-classes":
+  CLASSES_LIST = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+elif NUM_CLASSES == "static-alpha-classes":
+  CLASSES_LIST = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l', 'm', 'n', \
+                  'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y']
+elif NUM_CLASSES == "static-classes":
+  CLASSES_LIST = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l', 'm', 'n', \
+                  'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y', '1', '2', '3', \
+                  '4', '5', '6', '7', '8']
+
   
 CLASSES_REGEX_GROUP = '|'.join(CLASSES_LIST)
 
