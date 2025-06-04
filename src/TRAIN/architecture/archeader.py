@@ -72,7 +72,6 @@ class Arch():
     y_true = self.y_test.numpy()
 
     self.accuracy = accuracy_score(y_true, y_pred)
-    print(f"Accuracy: {self.accuracy}")
     return self.accuracy
   
 ############################# Generic Architecture ############################
