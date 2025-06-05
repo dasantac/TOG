@@ -14,8 +14,10 @@ big_classes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',  \
                 '8', '9', '10']
 small_classes = ['0']
 ALL_CLASSES_LIST = big_classes + small_classes
-CLASSES_TO_NUMBERS = {ALL_CLASSES_LIST[i] : i for i in range(len(ALL_CLASSES_LIST))}
-NUMBERS_TO_CLASSES = {i : ALL_CLASSES_LIST[i] for i in range(len(ALL_CLASSES_LIST))}
+CLASSES_TO_NUMBERS = {ALL_CLASSES_LIST[i] : i for i in \
+                      range(len(ALL_CLASSES_LIST))}
+NUMBERS_TO_CLASSES = {i : ALL_CLASSES_LIST[i] for i in \
+                      range(len(ALL_CLASSES_LIST))}
 
 #NUM_CLASSES = "two-classes"
 #NUM_CLASSES = "three-classes"
