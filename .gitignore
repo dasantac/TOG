@@ -2,9 +2,9 @@
 .DS_Store
 
 # Only keeping code and scores for now
-bin/
+bin/gen/
 data/
-media/
+media/gen/
 
 # Python extras
 *__pycache__/

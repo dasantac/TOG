@@ -19,7 +19,7 @@ from sklearn.metrics import accuracy_score
 ############################# Generic Architecture ############################
 
 class Arch():
-  def __init__(self, data_config, model_path_dir):
+  def __init__(self, data_config, df, model_path_dir):
     # Dataset
     self.data_config = data_config
     self.PH2 = data_config["PH2"]
@@ -31,8 +31,11 @@ class Arch():
     self.label_col = data_config["label_col"]
     self.class_list = data_config["class_list"]
     self.test_ratio = data_config["test_ratio"]
-    self.set_datapath()
-    self.set_dataframe()
+    if df == None:
+      self.set_datapath()
+      self.set_dataframe()
+    else:
+      self.df = df
     # Model
     self.me = None
     self.model_path_dir = model_path_dir

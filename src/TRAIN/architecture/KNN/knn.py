@@ -16,9 +16,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 class KNN(Arch):
-  def __init__(self, data_config, model_path_dir, k):
+  def __init__(self, data_config, df, model_path_dir, k):
     # Dataset and scoring
-    super().__init__(data_config, model_path_dir)
+    super().__init__(data_config, df, model_path_dir)
     self.set_datasets()
     if not self.PH3:
       self.standardize_data()
@@ -61,10 +61,10 @@ class KNN(Arch):
 
 # Record keeping functions
 def keep_scores_knn(score, data_config, k):
-  sup.knn_score_tracker.append(data_config["class_list"]+[score]+
-                               data_config["data_unit"]+data_config["PH2"]+
-                               data_config["PH3"]+data_config["reducer"]+
-                               data_config["kernel"]+data_config["n"]+[k])
+  sup.knn_score_tracker.append([data_config["class_list"], score,
+                               data_config["data_unit"], data_config["PH2"],
+                               data_config["PH3"], data_config["reducer"],
+                               data_config["kernel"], data_config["n"], [k]])
 
 def update_best_knn(score, data_config, k, model):
   if score > sup.best_knn_scores[data_config["data_unit"]]["score"]:
@@ -74,7 +74,7 @@ def update_best_knn(score, data_config, k, model):
 
       sup.best_knn_scores[data_config["data_unit"]].update({
           "score": score,
-          "data_config": data_config,
+          "data_config": data_config.copy(),
           "k": k
       })
 
@@ -89,16 +89,21 @@ def print_best_knn(data_unit):
 # Training functions
 def try_all_k(data_config, model_path_dir):
   for k in sup.TRAIN_KNN_K_CANDIDATES:
-    model = KNN(data_config=data_config, model_path_dir=model_path_dir, k=k)
+    if k == 1:
+      model = KNN(data_config=data_config, df=None, model_path_dir=model_path_dir, k=k)
+      save_df = model.df
+    else:
+      model = KNN(data_config=data_config, df=save_df, model_path_dir=model_path_dir, k=k)
+
     model.fit()
     score = model.score()
-    #print(f"n={n}; k={k}; score: {score}")
 
     keep_scores_knn(score, data_config, k)
     update_best_knn(score, data_config, k, model)
 
 def best_KNN(data_unit, label_col, class_list=sup.NUM_CLASSES, test_ratio=0.2):
-  model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, sup.TRAIN_KNN_CODE, data_config["data_unit"])
+
+  model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, class_list, sup.TRAIN_KNN_CODE, data_unit)
   sup.create_dir_if_not_exists(model_path_dir)
 
   data_config = {
@@ -112,8 +117,6 @@ def best_KNN(data_unit, label_col, class_list=sup.NUM_CLASSES, test_ratio=0.2):
   "class_list": class_list,
   "test_ratio": test_ratio,
   }
-
-
 
   for PH2 in [True, False]:
     data_config["PH2"] = PH2

@@ -154,8 +154,8 @@ PH3_REDUCER_KERNEL_NAMES = [PH3_REDUCER_KERNEL_NAME_POLY,
                             PH3_REDUCER_KERNEL_NAME_SIG,
                             PH3_REDUCER_KERNEL_NAME_COS]
 
-TRAIN_BINGEN_ROOT = os.path.join(BIN_ROOT, 'gen', 'TRAIN', NUM_CLASSES)
-TRAIN_SCORES_ROOT = os.path.join(SCORES_ROOT, NUM_CLASSES)
+TRAIN_BINGEN_ROOT = os.path.join(BIN_ROOT, 'gen', 'TRAIN')
+TRAIN_SCORES_ROOT = os.path.join(SCORES_ROOT)
 TRAIN_KNN_CODE = 'KNN'
 
 ################################## Filesystem #################################
@@ -311,8 +311,6 @@ best_knn_scores = {
         "k": -1
     }
 }
-
-
 
 ################################ Score tracking ###############################
 ###############################################################################
