@@ -38,7 +38,7 @@ pose_detector = vision.PoseLandmarker.create_from_options(pose_options)
 
 # to extracted landmakrs as columns in our dataframe
 import pandas as pd
-original_df_columns = sup.tag_columns + [sup.fileid_col, sup.frame_count_col]
+original_df_columns = sup.tag_columns + [sup.class_numeric_column]
 
 new_column_names = original_df_columns \
   + ["first_frame", "current_frame"] \

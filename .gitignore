@@ -1,8 +1,10 @@
 # MacOS
 .DS_Store
 
-# Heavy binaries
+# Only keeping code and scores for now
 bin/
+data/
+media/
 
 # Python extras
 *__pycache__/

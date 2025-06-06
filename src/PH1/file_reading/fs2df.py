@@ -56,7 +56,7 @@ def get_tags(fileid):
   handedness = get_handedness(fileid)
   class_name = get_class_name(fileid)
   class_numeric = sup.CLASSES_TO_NUMBERS[class_name]
-  return person_id, cycle_num, handedness, class_name, class_numeric, fileid
+  return fileid, person_id, cycle_num, handedness, class_name, class_numeric
 
 ####################### nltk corpus to pandas dataframe #######################
 ###############################################################################
