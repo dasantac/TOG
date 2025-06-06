@@ -10,3 +10,10 @@ pip install python-dotenv
 conda install pytorch::pytorch
 conda install anaconda::pandas
 conda install anaconda::scikit-learn
+
+
+# BERT - python=3.10
+pip install python-dotenv
+conda install numpy pandas
+conda install pytorch::pytorch
+pip install transformers
