@@ -61,7 +61,10 @@ class KNN(Arch):
 
 # Record keeping functions
 def keep_scores_knn(score, data_config, k):
-  sup.knn_score_tracker.append([score]+list(data_config.values())+[k])
+  sup.knn_score_tracker.append(data_config["class_list"]+[score]+
+                               data_config["data_unit"]+data_config["PH2"]+
+                               data_config["PH3"]+data_config["reducer"]+
+                               data_config["kernel"]+data_config["n"]+[k])
 
 def update_best_knn(score, data_config, k, model):
   if score > sup.best_knn_scores[data_config["data_unit"]]["score"]:

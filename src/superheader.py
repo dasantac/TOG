@@ -287,7 +287,11 @@ for k in range(NUM_FRAMES_PER_VIDEO):
 ###############################################################################
 ################################ Score tracking ###############################
 
+knn_scores_columns = ["classlist", "score", "data_unit", "PH2", "PH3", 
+                      "reducer", "kernel", "n", "k"]
+
 ## KNN
+
 knn_score_tracker = []
 
 best_knn_scores = {
