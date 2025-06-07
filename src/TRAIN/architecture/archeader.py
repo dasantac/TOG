@@ -8,7 +8,6 @@ sys.path.append(os.environ["PYTHONPATH"])
 # Load project-wide variables
 import superheader as sup
 
-import pickle
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
@@ -17,7 +16,7 @@ from sklearn.preprocessing import StandardScaler
 ############################# Generic Architecture ############################
 
 class Arch():
-  def __init__(self, data_config, df, train_config, model_path_dir):
+  def __init__(self, data_config, df, train_config):
     # Dataset
     self.data_config = data_config
     self.PH2 = data_config["PH2"]
@@ -28,7 +27,7 @@ class Arch():
     self.data_unit = data_config["data_unit"]
     self.label_col = data_config["label_col"]
     self.class_list = data_config["class_list"]
-    self.test_ratio = data_config["test_ratio"]
+    self.test_ratio = 0.2
 
     if df == None:
       self.set_datapath()
@@ -41,7 +40,7 @@ class Arch():
     # Model
     self.train_config = train_config
     self.me = None
-    self.model_path_dir = model_path_dir
+    self.arch = train_config["arch"]
 
     # score
     self.accuracy = None
@@ -123,16 +122,7 @@ class Arch():
     pass
   
   def keep(self):
-    model_path = os.path.join(self.model_path_dir,
-                              f"{self.PH2}-"\
-                              f"{self.PH3}-"\
-                              f"{self.reducer}-"\
-                              f"{self.kernel}-"\
-                              f"n{self.n}-"\
-                              f"k{self.k}.pkl"
-    )
-    with open(model_path, 'wb') as f:
-            pickle.dump(self.me, f)
+    pass
 
 ############################# Generic Architecture ############################
 ###############################################################################
@@ -145,3 +135,66 @@ from .BERT import bert
 
 ##################################### KNN #####################################
 ###############################################################################
+
+# Score tracking
+def print_best(arch, data_unit):
+  best = sup.best_scores[arch][data_unit]
+  print(f"Data Unit: {data_unit}")
+  print(f"Best score: {best['score']}")
+  print(f"Best data config: {best['data_config']}")
+  print(f"Best train config: {best['train_config']}")
+
+def update_best(model:Arch):
+  if model.accuracy > sup.best_scores[model.arch][model.data_unit]["accuracy"]:
+      print(f"updating best... {model.accuracy}")
+
+      model.keep()
+
+      sup.best_scores[model.data_unit].update({
+          "accuracy": model.accuracy,
+          "data_config": model.data_config,
+          "train_config": model.train_config
+      })
+
+def try_data_configs(data_unit, label_col, class_list, arch):
+  data_config = {
+    "PH2" : None,
+    "PH3" : None,
+    "reducer": '',
+    "kernel": '',
+    "n": -1,
+    "data_unit": data_unit,
+    "label_col": label_col,
+    "class_list": class_list
+    }
+  
+  if arch == sup.TRAIN_KNN_CODE:
+    try_data_configs = knn.try_knn_train_configs
+  elif arch == sup.TRAIN_BERT_CODE:
+    try_data_configs = bert.try_bert_train_configs
+
+  for PH2 in [True, False]:
+    data_config["PH2"] = PH2
+    for PH3 in [True, False]:
+      data_config["PH3"] = PH3
+      if PH3:
+        for n in sup.PH3_N_CANDIDATES:
+          data_config["n"] = n
+          for reducer in sup.PH3_REDUCER_NAMES:
+            data_config["reducer"] = reducer
+            if reducer == sup.PH3_REDUCER_NAME_KPCA:
+              for kernel in sup.PH3_REDUCER_KERNEL_NAMES:
+                data_config["kernel"] = kernel
+                try_data_configs(data_config)
+            else:
+              data_config["kernel"] = ''
+              try_data_configs(data_config)
+      else:
+        data_config["n"] = -1
+        data_config["reducer"] = ''
+        data_config["kernel"] = ''
+        try_data_configs(data_config)
+
+def find_best(data_unit, label_col, class_list, arch):
+  try_data_configs(data_unit, label_col, class_list, arch)
+  print_best(arch, data_unit)

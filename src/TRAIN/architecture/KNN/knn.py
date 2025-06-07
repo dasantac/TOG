@@ -8,17 +8,19 @@ sys.path.append(os.environ["PYTHONPATH"])
 # Load project-wide variables
 import superheader as sup
 from ..archeader import Arch
+from ..archeader import update_best
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+import pickle
 
 ###############################################################################
 ####################### K Nearest Neighbors architecture ######################
 class KNN(Arch):
-  def __init__(self, data_config, df, train_config, model_path_dir):
+  def __init__(self, data_config, df, train_config):
     # Dataset and scoring
-    super().__init__(data_config, df, train_config, model_path_dir)
+    super().__init__(data_config, df, train_config)
     self.set_datasets()
 
     # Model
@@ -44,88 +46,45 @@ class KNN(Arch):
     self.accuracy = accuracy_score(self.y_test, y_pred)
     return self.accuracy
   
+  def keep(self):
+    model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, self.class_list, 
+                                       sup.TRAIN_KNN_CODE, self.data_unit)
+    sup.create_dir_if_not_exists(model_path_dir)
+    model_path = os.path.join(self.model_path_dir,
+                              f"{self.PH2}-"\
+                              f"{self.PH3}-"\
+                              f"{self.reducer}-"\
+                              f"{self.kernel}-"\
+                              f"n{self.n}-"\
+                              f"k{self.k}.pkl"
+    )
+    with open(model_path, 'wb') as f:
+            pickle.dump(self.me, f)
+  
 ####################### K Nearest Neighbors architecture ######################
 ###############################################################################
 
 # Record keeping functions
-def keep_scores_knn(score, data_config, k):
-  sup.knn_score_tracker.append([data_config["class_list"], score,
-                               data_config["data_unit"], data_config["PH2"],
-                               data_config["PH3"], data_config["reducer"],
-                               data_config["kernel"], data_config["n"], [k]])
-
-def update_best_knn(score, data_config, k, model):
-  if score > sup.best_knn_scores[data_config["data_unit"]]["score"]:
-      print(f"updating best... {score}")
-
-      model.keep()
-
-      sup.best_knn_scores[data_config["data_unit"]].update({
-          "score": score,
-          "data_config": data_config.copy(),
-          "k": k
-      })
-
-def print_best_knn(data_unit):
-  best = sup.best_knn_scores[data_unit]
-  print(f"Data Unit: {data_unit}")
-  print(f"Best score: {best['score']}")
-  print(f"Best k: {best['k']}")
-  print(f"Best data config: {best['data_config']}")
-
+def keep_scores_knn(model:KNN):
+  sup.knn_score_tracker.append([model.class_list, model.accuracy,
+                               model.data_unit, model.PH2,
+                               model.PH3, model.reducer,
+                               model.kernel, model.n, model.k])
 
 # Training functions
-def try_all_k(data_config, model_path_dir):
-  for k in sup.TRAIN_KNN_K_CANDIDATES:
+TRAIN_KNN_K_CANDIDATES = [k for k in range(1,32)]
+
+def try_knn_train_configs(data_config):
+  for k in TRAIN_KNN_K_CANDIDATES:
+    train_config = {"arch" : sup.TRAIN_KNN_CODE, "k" : k}
     if k == 1:
-      model = KNN(data_config=data_config, df=None, model_path_dir=model_path_dir, k=k)
+      model = KNN(data_config=data_config, df=None, train_config=train_config)
       save_df = model.df
     else:
-      model = KNN(data_config=data_config, df=save_df, model_path_dir=model_path_dir, k=k)
+      model = KNN(data_config=data_config, df=save_df, train_config=train_config)
 
     model.fit()
-    score = model.score()
+    model.score()
 
-    keep_scores_knn(score, data_config, k)
-    update_best_knn(score, data_config, k, model)
-
-def best_KNN(data_unit, label_col, class_list=sup.NUM_CLASSES, test_ratio=0.2):
-
-  model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, class_list, sup.TRAIN_KNN_CODE, data_unit)
-  sup.create_dir_if_not_exists(model_path_dir)
-
-  data_config = {
-  "PH2" : None,
-  "PH3" : None,
-  "reducer": '',
-  "kernel": '',
-  "n": -1,
-  "data_unit": data_unit,
-  "label_col": label_col,
-  "class_list": class_list,
-  "test_ratio": test_ratio,
-  }
-
-  for PH2 in [True, False]:
-    data_config["PH2"] = PH2
-    for PH3 in [True, False]:
-      data_config["PH3"] = PH3
-      if PH3:
-        for n in sup.PH3_N_CANDIDATES:
-          data_config["n"] = n
-          for reducer in sup.PH3_REDUCER_NAMES:
-            data_config["reducer"] = reducer
-            if reducer == sup.PH3_REDUCER_NAME_KPCA:
-              for kernel in sup.PH3_REDUCER_KERNEL_NAMES:
-                data_config["kernel"] = kernel
-                try_all_k(data_config, model_path_dir)
-            else:
-              data_config["kernel"] = ''
-              try_all_k(data_config, model_path_dir)
-      else:
-        data_config["n"] = -1
-        data_config["reducer"] = ''
-        data_config["kernel"] = ''
-        try_all_k(data_config, model_path_dir)
-  
-  print_best_knn(data_unit)
+    keep_scores_knn(model)
+    update_best(model)

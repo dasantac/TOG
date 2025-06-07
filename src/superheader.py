@@ -64,10 +64,6 @@ NUM_FRAMES_PER_VIDEO = 2*NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF
 # PH3
 PH3_N_CANDIDATES = [n for n in range(1,32)]
 
-# TRAIN
-## KNN
-TRAIN_KNN_K_CANDIDATES = [k for k in range(1,32)]
-
 ############################### Hyperparameters ###############################
 ###############################################################################
 ################################## Filesystem #################################
@@ -158,6 +154,7 @@ TRAIN_BINLOAD_ROOT = os.path.join(BIN_ROOT, 'load', 'TRAIN')
 TRAIN_BINGEN_ROOT = os.path.join(BIN_ROOT, 'gen', 'TRAIN')
 TRAIN_SCORES_ROOT = os.path.join(SCORES_ROOT)
 TRAIN_KNN_CODE = 'KNN'
+TRAIN_BERT_CODE = 'BERT'
 
 ################################## Filesystem #################################
 ###############################################################################
@@ -288,29 +285,52 @@ for k in range(NUM_FRAMES_PER_VIDEO):
 ###############################################################################
 ################################ Score tracking ###############################
 
-knn_scores_columns = ["classlist", "score", "data_unit", "PH2", "PH3", 
-                      "reducer", "kernel", "n", "k"]
-
 ## KNN
-
+knn_scores_columns = ["class_list", "accuracy", "data_unit", "PH2", "PH3", 
+                      "reducer", "kernel", "n", "k"]
 knn_score_tracker = []
 
-best_knn_scores = {
-    DATA_AH_PF: {
-        "score": -1,
-        "data_config": -1,
-        "k": -1
-    },
-    DATA_S_PF: {
-        "score": -1,
-        "data_config": -1,
-        "k": -1
-    },
-    DATA_S_PV: {
-        "score": -1,
-        "data_config": -1,
-        "k": -1
-    }
+## BERT
+bert_scores_columns = ["class_list", "accuracy", "data_unit", "PH2", "PH3", 
+                      "reducer", "kernel", "n", "loadble", "lr", "optimizer",
+                      "loss_fn", "num_epochs"]
+bert_score_tracker = []
+
+best_scores = {
+  TRAIN_KNN_CODE: {
+                    DATA_AH_PF: {
+                        "accuracy": -1,
+                        "data_config": -1,
+                        "train_config": -1
+                    },
+                    DATA_S_PF: {
+                        "accuracy": -1,
+                        "data_config": -1,
+                        "train_config": -1
+                    },
+                    DATA_S_PV: {
+                        "accuracy": -1,
+                        "data_config": -1,
+                        "train_config": -1
+                    }
+  },
+  TRAIN_BERT_CODE: {
+                    DATA_AH_PF: {
+                        "accuracy": -1,
+                        "data_config": -1,
+                        "train_config": -1
+                    },
+                    DATA_S_PF: {
+                        "accuracy": -1,
+                        "data_config": -1,
+                        "train_config": -1
+                    },
+                    DATA_S_PV: {
+                        "accuracy": -1,
+                        "data_config": -1,
+                        "train_config": -1
+                    }
+  }
 }
 
 ################################ Score tracking ###############################

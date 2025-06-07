@@ -8,6 +8,7 @@ sys.path.append(os.environ["PYTHONPATH"])
 # Load project-wide variables
 import superheader as sup
 from ..archeader import Arch
+from ..archeader import update_best
 
 import torch
 import torch.nn as nn
@@ -16,6 +17,11 @@ from transformers import BertModel
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+
+device = torch.device("mps" if torch.backends.mps.is_available()
+                      else "cuda" if torch.cuda.is_available()
+                      else "cpu")
+print(f"device: {device}")
 
 ### Helper classes ###
 # --- Custom BERT Embeddings ---
@@ -88,16 +94,16 @@ class BertWithCustomInput(nn.Module):
 ############################## BERT architecture ##############################
 
 class BERT(Arch):
-  def __init__(self, data_config, df, train_config, model_path_dir):
+  def __init__(self, data_config, df, train_config):
     # Dataset and scoring
-    super().__init__(data_config, df, train_config, model_path_dir)
-    self.device = train_config["device"]
+    super().__init__(data_config, df, train_config)
     self.seq_len = 12
-    self.input_dim = train_config["input_dim"]
-    self.batch_size = train_config["batch_size"]
+    self.input_dim = data_config["input_dim"]
+    self.batch_size = data_config["batch_size"]
     self.set_dataloaders()
 
     # Model
+    self.device = train_config["device"]
     self.loadable = train_config["loadable"]
     self.me = BertWithCustomInput(self.loadable, self.input_dim)
     self.me.to(self.device)
@@ -152,6 +158,19 @@ class BERT(Arch):
     y_true = torch.cat(all_labels)
 
     self.accuracy = accuracy_score(y_true, y_pred)
+
+  def keep(self):
+    sup.create_dir_if_not_exists(self.model_path_dir)
+    model_path = os.path.join(self.model_path_dir,
+                              f"{self.PH2}-"\
+                              f"{self.PH3}-"\
+                              f"{self.reducer}-"\
+                              f"{self.kernel}-"\
+                              f"n{self.n}-"\
+                              f"{self.loadable}.pth"
+    )
+
+    torch.save(self.me.state_dict(), model_path)
      
 
 ############################## BERT architecture ##############################
@@ -169,12 +188,60 @@ def download_if_not_exists(model_name):
     print(f"Directory {model_dir} exists. Continuing with execution")
 
 DISTILBERT= "distilbert-base-uncased"
-BERT_TINY="prajjwal1/bert-tiny"
+BERT_TINY="prajjwal1-bert-tiny"
 BERT_BASE="bert-base-uncased"
 BERT_LARGE="bert-large-uncased"
-BERT_LIST = [DISTILBERT, BERT_TINY, BERT_BASE, BERT_LARGE]
+BERT_CANDIDATES = [DISTILBERT, BERT_TINY, BERT_BASE, BERT_LARGE]
 
 download_if_not_exists(DISTILBERT)
 download_if_not_exists(BERT_TINY)
 download_if_not_exists(BERT_BASE)
 download_if_not_exists(BERT_LARGE)
+
+# Record keeping functions
+def keep_scores_bert(model:BERT):
+  sup.bert_score_tracker.append([model.class_list, model.accuracy,
+                               model.data_unit, model.PH2,
+                               model.PH3, model.reducer,
+                               model.kernel, model.n, model.loadable,
+                               model.lr, model.optimizer, model.loss_fn,
+                               model.num_epochs])
+
+# Training functions
+BERT_lr_CANDIDATES = [2e-5, 2e-6]
+BERT_optimizer_CANDIDATES = [optim.AdamW]
+BERT_loss_fn_CANDIDATES = [nn.CrossEntropyLoss]
+BERT_num_epochs_CANDIDATES = [1000, 5000, 10000]
+
+def try_bert_train_configs(data_config):
+  first = True
+  for load_name in BERT_CANDIDATES:
+    for lr in BERT_lr_CANDIDATES:
+      for optimizer in BERT_optimizer_CANDIDATES:
+        for loss_fn in BERT_loss_fn_CANDIDATES:
+          for num_epochs in BERT_num_epochs_CANDIDATES:
+
+            train_config = {
+              "arch" : sup.TRAIN_BERT_CODE,
+              "device" : device,
+               "loadable" : load_name,
+               "optimizer" : optimizer,
+               "lr" : lr,
+               "loss_fn" : loss_fn,
+               "num_epochs" : num_epochs
+            }
+
+            if first:
+              model = BERT(data_config=data_config, df=None, 
+                           train_config=train_config)
+              save_df = model.df
+              first = False
+            else:
+              model = BERT(data_config=data_config, df=save_df, 
+                           train_config=train_config)
+              
+            model.fit()
+            model.score()
+
+            keep_scores_bert(model)
+            update_best(model)
