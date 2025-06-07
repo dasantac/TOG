@@ -140,7 +140,7 @@ class BERT(Arch):
           self.optimizer.step()
           total_loss += loss.item()
 
-        print(f"Epoch {epoch+1} Loss: {total_loss / len(self.train_loader):.4f}")
+        #print(f"Epoch {epoch+1} Loss: {total_loss / len(self.train_loader):.4f}")
   
   def score(self):
     self.me.eval()
@@ -160,14 +160,16 @@ class BERT(Arch):
     self.accuracy = accuracy_score(y_true, y_pred)
 
   def keep(self):
-    sup.create_dir_if_not_exists(self.model_path_dir)
-    model_path = os.path.join(self.model_path_dir,
+    model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, self.class_list, 
+                                       sup.TRAIN_BERT_CODE, self.data_unit,
+                                       self.loadable)
+    sup.create_dir_if_not_exists(model_path_dir)
+    model_path = os.path.join(model_path_dir,
                               f"{self.PH2}-"\
                               f"{self.PH3}-"\
                               f"{self.reducer}-"\
                               f"{self.kernel}-"\
-                              f"n{self.n}-"\
-                              f"{self.loadable}.pth"
+                              f"n{self.n}.pth"
     )
 
     torch.save(self.me.state_dict(), model_path)
@@ -188,10 +190,10 @@ def download_if_not_exists(model_name):
     print(f"Directory {model_dir} exists. Continuing with execution")
 
 DISTILBERT= "distilbert-base-uncased"
-BERT_TINY="prajjwal1-bert-tiny"
+BERT_TINY="prajjwal1/bert-tiny"
 BERT_BASE="bert-base-uncased"
 BERT_LARGE="bert-large-uncased"
-BERT_CANDIDATES = [DISTILBERT, BERT_TINY, BERT_BASE, BERT_LARGE]
+BERT_CANDIDATES = [BERT_TINY]
 
 download_if_not_exists(DISTILBERT)
 download_if_not_exists(BERT_TINY)
@@ -211,10 +213,11 @@ def keep_scores_bert(model:BERT):
 BERT_lr_CANDIDATES = [2e-5, 2e-6]
 BERT_optimizer_CANDIDATES = [optim.AdamW]
 BERT_loss_fn_CANDIDATES = [nn.CrossEntropyLoss]
-BERT_num_epochs_CANDIDATES = [1000, 5000, 10000]
+BERT_num_epochs_CANDIDATES = [5, 10, 15]
 
 def try_bert_train_configs(data_config):
   first = True
+
   for load_name in BERT_CANDIDATES:
     for lr in BERT_lr_CANDIDATES:
       for optimizer in BERT_optimizer_CANDIDATES:

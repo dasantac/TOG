@@ -5,6 +5,13 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path="../project.env")
 sys.path.append(os.environ["PYTHONPATH"])
 
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message=".*",
+    category=FutureWarning
+)
+
 ###############################################################################
 ################################### Classes ###################################
 

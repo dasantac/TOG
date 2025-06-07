@@ -50,7 +50,7 @@ class KNN(Arch):
     model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, self.class_list, 
                                        sup.TRAIN_KNN_CODE, self.data_unit)
     sup.create_dir_if_not_exists(model_path_dir)
-    model_path = os.path.join(self.model_path_dir,
+    model_path = os.path.join(model_path_dir,
                               f"{self.PH2}-"\
                               f"{self.PH3}-"\
                               f"{self.reducer}-"\

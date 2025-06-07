@@ -11,6 +11,9 @@ import superheader as sup
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
+sup.report_dir_if_not_exists(sup.PH1_DATA_ROOT)
+sup.report_dir_if_not_exists(sup.PH2_DATA_ROOT)
+sup.report_dir_if_not_exists(sup.PH3_DATA_ROOT)
 
 ###############################################################################
 ############################# Generic Architecture ############################
@@ -29,7 +32,7 @@ class Arch():
     self.class_list = data_config["class_list"]
     self.test_ratio = 0.2
 
-    if df == None:
+    if df is None:
       self.set_datapath()
       self.set_dataframe()
       if not self.PH3:
@@ -126,6 +129,28 @@ class Arch():
 
 ############################# Generic Architecture ############################
 ###############################################################################
+
+# Score tracking
+def print_best(arch, data_unit):
+  best = sup.best_scores[arch][data_unit]
+  print(f"Data Unit: {data_unit}")
+  print(f"Best score: {best['accuracy']}")
+  print(f"Best data config: {best['data_config']}")
+  print(f"Best train config: {best['train_config']}")
+
+def update_best(model:Arch):
+  if model.accuracy > sup.best_scores[model.arch][model.data_unit]["accuracy"]:
+      print(f"updating best... {model.accuracy}")
+
+      model.keep()
+
+      sup.best_scores[model.arch][model.data_unit].update({
+          "accuracy": model.accuracy,
+          "data_config": model.data_config.copy(),
+          "train_config": model.train_config.copy()
+      })
+
+###############################################################################
 ##################################### KNN #####################################
 
 from .KNN import knn
@@ -136,26 +161,7 @@ from .BERT import bert
 ##################################### KNN #####################################
 ###############################################################################
 
-# Score tracking
-def print_best(arch, data_unit):
-  best = sup.best_scores[arch][data_unit]
-  print(f"Data Unit: {data_unit}")
-  print(f"Best score: {best['score']}")
-  print(f"Best data config: {best['data_config']}")
-  print(f"Best train config: {best['train_config']}")
-
-def update_best(model:Arch):
-  if model.accuracy > sup.best_scores[model.arch][model.data_unit]["accuracy"]:
-      print(f"updating best... {model.accuracy}")
-
-      model.keep()
-
-      sup.best_scores[model.data_unit].update({
-          "accuracy": model.accuracy,
-          "data_config": model.data_config,
-          "train_config": model.train_config
-      })
-
+# Taining
 def try_data_configs(data_unit, label_col, class_list, arch):
   data_config = {
     "PH2" : None,
@@ -171,6 +177,8 @@ def try_data_configs(data_unit, label_col, class_list, arch):
   if arch == sup.TRAIN_KNN_CODE:
     try_data_configs = knn.try_knn_train_configs
   elif arch == sup.TRAIN_BERT_CODE:
+    data_config["input_dim"] = 87
+    data_config["batch_size"] = 512
     try_data_configs = bert.try_bert_train_configs
 
   for PH2 in [True, False]:
@@ -180,6 +188,8 @@ def try_data_configs(data_unit, label_col, class_list, arch):
       if PH3:
         for n in sup.PH3_N_CANDIDATES:
           data_config["n"] = n
+          if arch == sup.TRAIN_BERT_CODE:
+            data_config["input_dim"] = n
           for reducer in sup.PH3_REDUCER_NAMES:
             data_config["reducer"] = reducer
             if reducer == sup.PH3_REDUCER_NAME_KPCA:
