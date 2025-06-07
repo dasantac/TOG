@@ -2,29 +2,27 @@
 import os
 import sys
 from dotenv import load_dotenv
-load_dotenv(dotenv_path="../project.env")
+load_dotenv(dotenv_path="../../../project.env")
 sys.path.append(os.environ["PYTHONPATH"])
 
 # Load project-wide variables
 import superheader as sup
 from ..archeader import Arch
 
-import pickle
-
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
 
+###############################################################################
+####################### K Nearest Neighbors architecture ######################
 class KNN(Arch):
-  def __init__(self, data_config, df, model_path_dir, k):
+  def __init__(self, data_config, df, train_config, model_path_dir):
     # Dataset and scoring
-    super().__init__(data_config, df, model_path_dir)
+    super().__init__(data_config, df, train_config, model_path_dir)
     self.set_datasets()
-    if not self.PH3:
-      self.standardize_data()
 
     # Model
-    self.k = k
+    self.k = train_config["k"]
     self.me = KNeighborsClassifier(n_neighbors=self.k)
       
   def set_datasets(self):
@@ -33,12 +31,6 @@ class KNN(Arch):
 
     self.X_train, self.X_test, self.y_train, self.y_test = \
       train_test_split(X, y, test_size=0.2, random_state=42)
-    
-  def standardize_data(self):
-    self.scaler = StandardScaler()
-    data_cols = self.df.columns.difference([self.label_col])
-    self.df[data_cols] = self.scaler.fit_transform(self.df[data_cols])
-    
 
   def fit(self):
     self.me.fit(self.X_train, self.y_train)
@@ -46,18 +38,14 @@ class KNN(Arch):
   def predict(self, X):
     return self.me.predict(X)
   
-  def keep(self):
-    model_path = os.path.join(self.model_path_dir,
-                              f"{self.PH2}-"\
-                              f"{self.PH3}-"\
-                              f"{self.reducer}-"\
-                              f"{self.kernel}-"\
-                              f"n{self.n}-"\
-                              f"k{self.k}.pkl"
-    )
-    with open(model_path, 'wb') as f:
-            pickle.dump(self.me, f)
+  def score(self):
+    y_pred = self.predict(self.X_test)
 
+    self.accuracy = accuracy_score(self.y_test, y_pred)
+    return self.accuracy
+  
+####################### K Nearest Neighbors architecture ######################
+###############################################################################
 
 # Record keeping functions
 def keep_scores_knn(score, data_config, k):

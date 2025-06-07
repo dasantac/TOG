@@ -8,17 +8,16 @@ sys.path.append(os.environ["PYTHONPATH"])
 # Load project-wide variables
 import superheader as sup
 
-import torch
-from torch.utils.data import TensorDataset, DataLoader, random_split
+import pickle
 import pandas as pd
-from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
 
 
 ###############################################################################
 ############################# Generic Architecture ############################
 
 class Arch():
-  def __init__(self, data_config, df, model_path_dir):
+  def __init__(self, data_config, df, train_config, model_path_dir):
     # Dataset
     self.data_config = data_config
     self.PH2 = data_config["PH2"]
@@ -30,12 +29,17 @@ class Arch():
     self.label_col = data_config["label_col"]
     self.class_list = data_config["class_list"]
     self.test_ratio = data_config["test_ratio"]
+
     if df == None:
       self.set_datapath()
       self.set_dataframe()
+      if not self.PH3:
+        self.standardize_data()
     else:
       self.df = df
+
     # Model
+    self.train_config = train_config
     self.me = None
     self.model_path_dir = model_path_dir
 
@@ -107,23 +111,28 @@ class Arch():
     self.df = self.df.drop(columns=sup.tag_columns+[nonlabel, sup.current_frame_col], errors='ignore')
 
   def standardize_data(self):
-    pass
+    self.scaler = StandardScaler()
+    data_cols = self.df.columns.difference([self.label_col])
+    self.df[data_cols] = self.scaler.fit_transform(self.df[data_cols])
   ### Dataset helper functions end here###
 
   def fit(self):
     pass
 
-  def predict(self, X):
-    pass
-
   def score(self):
-    y_pred = self.predict(self.X_test)
-
-    self.accuracy = accuracy_score(self.y_test, y_pred)
-    return self.accuracy
+    pass
   
   def keep(self):
-    pass
+    model_path = os.path.join(self.model_path_dir,
+                              f"{self.PH2}-"\
+                              f"{self.PH3}-"\
+                              f"{self.reducer}-"\
+                              f"{self.kernel}-"\
+                              f"n{self.n}-"\
+                              f"k{self.k}.pkl"
+    )
+    with open(model_path, 'wb') as f:
+            pickle.dump(self.me, f)
 
 ############################# Generic Architecture ############################
 ###############################################################################
