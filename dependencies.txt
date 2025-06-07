@@ -13,7 +13,7 @@ conda install anaconda::scikit-learn
 
 
 # BERT - python=3.10
-pip install python-dotenv
-conda install numpy pandas
-conda install pytorch::pytorch
+pip install torch
 pip install transformers
+pip install scikit-learn
+pip install pandas numpy python-dotenv ipykernel
