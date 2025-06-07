@@ -140,6 +140,8 @@ class Arch():
 
 from .KNN import knn
 from .KNN.knn import KNN
+from .BERT.bert import BERT
+from .BERT import bert
 
 ##################################### KNN #####################################
 ###############################################################################

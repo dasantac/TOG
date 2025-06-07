@@ -2,7 +2,7 @@
 .DS_Store
 
 # Only keeping code and scores for now
-bin/gen/
+bin/
 data/
 media/gen/
 

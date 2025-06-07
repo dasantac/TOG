@@ -61,15 +61,16 @@ class CustomBertEmbeddings(nn.Module):
 # --- Model ---
 
 class BertWithCustomInput(nn.Module):
-  def __init__(self, data_config, train_config):
+  def __init__(self, loadable, input_dim):
     super().__init__()
-    self.bert = BertModel.from_pretrained(train_config["loadable"])
+    loadable_path = os.path.join(sup.TRAIN_BINLOAD_ROOT, loadable)
+    self.bert = BertModel.from_pretrained(loadable_path)
     self.bert.embeddings = CustomBertEmbeddings(
-        input_dim=train_config["input_dim"],
+        input_dim=input_dim,
         hidden_size=self.bert.config.hidden_size
     )
-    self.classifier = nn.Linear(self.bert.config.hidden_size, 
-                                data_config["class_list"])
+
+    self.classifier = nn.Linear(self.bert.config.hidden_size, input_dim)
 
   def forward(self, x):
     B, L, _ = x.shape
@@ -86,15 +87,20 @@ class BertWithCustomInput(nn.Module):
 ###############################################################################
 ############################## BERT architecture ##############################
 
-class BERT(nn.Module, Arch):
+class BERT(Arch):
   def __init__(self, data_config, df, train_config, model_path_dir):
     # Dataset and scoring
     super().__init__(data_config, df, train_config, model_path_dir)
     self.device = train_config["device"]
+    self.seq_len = 12
+    self.input_dim = train_config["input_dim"]
+    self.batch_size = train_config["batch_size"]
     self.set_dataloaders()
 
     # Model
-    self.me = BertWithCustomInput(self.data_config, self.train_config)
+    self.loadable = train_config["loadable"]
+    self.me = BertWithCustomInput(self.loadable, self.input_dim)
+    self.me.to(self.device)
     self.lr = train_config["lr"]
     self.optimizer = train_config["optimizer"](self.me.parameters(), self.lr)
     self.loss_fn = train_config["loss_fn"]()
@@ -153,11 +159,12 @@ class BERT(nn.Module, Arch):
 
 # Making sure the loadables are there
 def download_if_not_exists(model_name):
-  model_dir = os.path.join(sup.TRAIN_BINLOAD_ROOT, model_name)
+  model_dir = os.path.join(sup.TRAIN_BINLOAD_ROOT,model_name)
   if os.path.exists(model_dir)==False:
     print(f"Directory {model_dir} does not exist. Downloading the model and "
            "continuing with the execution")
-    _ = BertModel.from_pretrained(model_name, cache_dir=sup.TRAIN_BINLOAD_ROOT)
+    model = BertModel.from_pretrained(model_name)
+    model.save_pretrained(model_dir)
   else:
     print(f"Directory {model_dir} exists. Continuing with execution")
 
