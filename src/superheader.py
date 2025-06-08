@@ -33,31 +33,42 @@ NUM_CLASSES = "ten-classes"
 #NUM_CLASSES = "numeric-classes"
 #NUM_CLASSES = "static-alpha-classes"
 #NUM_CLASSES = "static-classes"
+#NUM_CLASSES = "alpha-classes"
 #NUM_CLASSES = "all-classes"
 
 print(f"\n\nChosen class grouping: {NUM_CLASSES}\n\n")
 
-if NUM_CLASSES == "all-classes":
-  CLASSES_LIST = ALL_CLASSES_LIST
-elif NUM_CLASSES == "two-classes":
-  CLASSES_LIST = ['a', 'b']
-elif NUM_CLASSES == "three-classes":
-  CLASSES_LIST = ['a', 'b', 'c']
-elif NUM_CLASSES == "six-classes":
-  CLASSES_LIST = ['a', 'b', 'c', 'd', 'e', 'f']
-elif NUM_CLASSES == "ten-classes":
-  CLASSES_LIST = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l']
-elif NUM_CLASSES == "numeric-classes":
-  CLASSES_LIST = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
-elif NUM_CLASSES == "static-alpha-classes":
-  CLASSES_LIST = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l', 'm', 'n', \
-                  'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y']
-elif NUM_CLASSES == "static-classes":
-  CLASSES_LIST = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l', 'm', 'n', \
-                  'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y', '1', '2', '3', \
-                  '4', '5', '6', '7', '8']
+def get_class_list(list_name):
+  if list_name == "all-classes":
+    class_list = ALL_CLASSES_LIST
+  elif list_name == "two-classes":
+    class_list = ['a', 'b']
+  elif list_name == "three-classes":
+    class_list = ['a', 'b', 'c']
+  elif list_name == "six-classes":
+    class_list = ['a', 'b', 'c', 'd', 'e', 'f']
+  elif list_name == "ten-classes":
+    class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l']
+  elif list_name == "numeric-classes":
+    class_list = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+  elif list_name == "static-alpha-classes":
+    class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l', 'm', 'n', \
+                    'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y']
+  elif list_name == "static-classes":
+    class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l', 'm', 'n', \
+                    'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y', '1', '2', '3', \
+                    '4', '5', '6', '7', '8']
+  elif list_name == "alpha-classes":
+    class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',  \
+                  'll', 'm', 'n', 'ñ', 'o', 'p', 'q', 'r', 'rr', 's', 't', 'u',\
+                  'v', 'w', 'x', 'y', 'z']
+    
+  return class_list
 
-  
+def get_class_numeric_list(class_list):
+  return [CLASSES_TO_NUMBERS[c] for c in class_list]
+
+CLASSES_LIST = get_class_list(NUM_CLASSES)
 CLASSES_REGEX_GROUP = '|'.join(CLASSES_LIST)
 
 ################################### Classes ###################################

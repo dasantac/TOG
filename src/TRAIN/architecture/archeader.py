@@ -30,6 +30,8 @@ class Arch():
     self.data_unit = data_config["data_unit"]
     self.label_col = data_config["label_col"]
     self.class_list = data_config["class_list"]
+    self.class_numeric_list = sup.get_class_numeric_list(
+                                sup.get_class_list(data_config["class_list"]))
     self.test_ratio = 0.2
 
     if df is None:
@@ -102,6 +104,10 @@ class Arch():
     if self.data_unit == sup.DATA_S_PV:
       return spv_df
 
+  def __filter_class_list(self):
+    self.df = self.df[self.df['class_numeric'].isin(self.class_numeric_list)]
+    return self.df
+  
   def set_dataframe(self):
     full_df = pd.read_csv(self.datapath)
     nonlabel = sup.class_numeric_column \
@@ -109,6 +115,7 @@ class Arch():
                   else sup.active_hand_col
     
     self.df = full_df.copy()
+    self.df = self.__filter_class_list()
     self.df = self.__filter_data_unit()
     self.df = self.df.drop(columns=sup.tag_columns+[nonlabel, sup.current_frame_col], errors='ignore')
 
@@ -141,6 +148,8 @@ def print_best(arch, data_unit):
 def update_best(model:Arch):
   if model.accuracy > sup.best_scores[model.arch][model.data_unit]["accuracy"]:
       print(f"updating best... {model.accuracy}")
+      print(f"\t{model.data_config}")
+      print(f"\t{model.train_config}")
 
       model.keep()
 
@@ -177,8 +186,7 @@ def try_data_configs(data_unit, label_col, class_list, arch):
   if arch == sup.TRAIN_KNN_CODE:
     try_data_configs = knn.try_knn_train_configs
   elif arch == sup.TRAIN_BERT_CODE:
-    data_config["input_dim"] = 87
-    data_config["batch_size"] = 512
+    data_config["batch_size"] = 1024
     try_data_configs = bert.try_bert_train_configs
 
   for PH2 in [True, False]:
@@ -201,6 +209,11 @@ def try_data_configs(data_unit, label_col, class_list, arch):
               try_data_configs(data_config)
       else:
         data_config["n"] = -1
+        if arch == sup.TRAIN_BERT_CODE:
+          if PH2:
+            data_config["input_dim"] = 87
+          else:
+            data_config["input_dim"] = 72
         data_config["reducer"] = ''
         data_config["kernel"] = ''
         try_data_configs(data_config)
