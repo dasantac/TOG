@@ -30,9 +30,6 @@ NUM_CLASSES = "two-classes"
 #NUM_CLASSES = "three-classes"
 #NUM_CLASSES = "six-classes"
 #NUM_CLASSES = "ten-classes"
-#NUM_CLASSES = "numeric-classes"
-#NUM_CLASSES = "static-alpha-classes"
-#NUM_CLASSES = "static-classes"
 #NUM_CLASSES = "alpha-classes"
 #NUM_CLASSES = "all-classes"
 
@@ -49,15 +46,6 @@ def get_class_list(list_name):
     class_list = ['a', 'b', 'c', 'd', 'e', 'f']
   elif list_name == "ten-classes":
     class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l']
-  elif list_name == "numeric-classes":
-    class_list = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
-  elif list_name == "static-alpha-classes":
-    class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l', 'm', 'n', \
-                    'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y']
-  elif list_name == "static-classes":
-    class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l', 'm', 'n', \
-                    'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y', '1', '2', '3', \
-                    '4', '5', '6', '7', '8']
   elif list_name == "alpha-classes":
     class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',  \
                   'll', 'm', 'n', 'ñ', 'o', 'p', 'q', 'r', 'rr', 's', 't', 'u',\
@@ -99,7 +87,7 @@ def report_dir_if_not_exists(path):
 
 def create_dir_if_not_exists(path):
   if os.path.exists(path)==False:
-    print(f"Directory {path} does not exist. Creating it and continuing with" \
+    print(f"Directory {path} does not exist. Creating it and continuing with "\
            "execution")
     os.makedirs(path)
   else:

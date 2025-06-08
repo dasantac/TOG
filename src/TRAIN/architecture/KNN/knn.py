@@ -73,7 +73,7 @@ def keep_scores_knn(model:KNN):
                                model.PH3, reducer, kernel, model.n, model.k])
 
 # Training functions
-TRAIN_KNN_K_CANDIDATES = [k for k in range(1,32)]
+TRAIN_KNN_K_CANDIDATES = [k for k in range(1,16)]
 
 def try_knn_train_configs(data_config):
   for k in TRAIN_KNN_K_CANDIDATES:
