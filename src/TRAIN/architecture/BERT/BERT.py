@@ -213,7 +213,7 @@ def keep_scores_bert(model:BERT):
 BERT_lr_CANDIDATES = [2e-5, 2e-6]
 BERT_optimizer_CANDIDATES = [optim.AdamW]
 BERT_loss_fn_CANDIDATES = [nn.CrossEntropyLoss]
-BERT_num_epochs_CANDIDATES = [5, 10, 15]
+BERT_num_epochs_CANDIDATES = [30]
 
 def try_bert_train_configs(data_config):
   first = True

@@ -26,10 +26,10 @@ CLASSES_TO_NUMBERS = {ALL_CLASSES_LIST[i] : i for i in \
 NUMBERS_TO_CLASSES = {i : ALL_CLASSES_LIST[i] for i in \
                       range(len(ALL_CLASSES_LIST))}
 
-NUM_CLASSES = "two-classes"
+#NUM_CLASSES = "two-classes"
 #NUM_CLASSES = "three-classes"
 #NUM_CLASSES = "six-classes"
-#NUM_CLASSES = "ten-classes"
+NUM_CLASSES = "ten-classes"
 #NUM_CLASSES = "numeric-classes"
 #NUM_CLASSES = "static-alpha-classes"
 #NUM_CLASSES = "static-classes"
