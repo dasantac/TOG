@@ -26,10 +26,10 @@ CLASSES_TO_NUMBERS = {ALL_CLASSES_LIST[i] : i for i in \
 NUMBERS_TO_CLASSES = {i : ALL_CLASSES_LIST[i] for i in \
                       range(len(ALL_CLASSES_LIST))}
 
-#NUM_CLASSES = "two-classes"
+NUM_CLASSES = "two-classes"
 #NUM_CLASSES = "three-classes"
 #NUM_CLASSES = "six-classes"
-NUM_CLASSES = "ten-classes"
+#NUM_CLASSES = "ten-classes"
 #NUM_CLASSES = "numeric-classes"
 #NUM_CLASSES = "static-alpha-classes"
 #NUM_CLASSES = "static-classes"
@@ -80,7 +80,7 @@ NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF = 6
 NUM_FRAMES_PER_VIDEO = 2*NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF
 
 # PH3
-PH3_N_CANDIDATES = [n for n in range(1,32)]
+PH3_N_CANDIDATES = [n for n in range(1,8)]
 
 ############################### Hyperparameters ###############################
 ###############################################################################

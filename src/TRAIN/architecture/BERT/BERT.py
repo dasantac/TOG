@@ -202,12 +202,13 @@ download_if_not_exists(BERT_LARGE)
 
 # Record keeping functions
 def keep_scores_bert(model:BERT):
+  reducer = model.reducer if model.reducer else 'None'
+  kernel = model.kernel if model.kernel else 'None'
   sup.bert_score_tracker.append([model.class_list, model.accuracy,
                                model.data_unit, model.PH2,
-                               model.PH3, model.reducer,
-                               model.kernel, model.n, model.loadable,
-                               model.lr, model.optimizer, model.loss_fn,
-                               model.num_epochs])
+                               model.PH3, reducer, kernel, model.n, 
+                               model.loadable, model.lr, model.optimizer, 
+                               model.loss_fn, model.num_epochs])
 
 # Training functions
 BERT_lr_CANDIDATES = [2e-5]

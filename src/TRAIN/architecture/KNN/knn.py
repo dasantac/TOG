@@ -66,10 +66,11 @@ class KNN(Arch):
 
 # Record keeping functions
 def keep_scores_knn(model:KNN):
+  reducer = model.reducer if model.reducer else 'None'
+  kernel = model.kernel if model.kernel else 'None'
   sup.knn_score_tracker.append([model.class_list, model.accuracy,
                                model.data_unit, model.PH2,
-                               model.PH3, model.reducer,
-                               model.kernel, model.n, model.k])
+                               model.PH3, reducer, kernel, model.n, model.k])
 
 # Training functions
 TRAIN_KNN_K_CANDIDATES = [k for k in range(1,32)]
