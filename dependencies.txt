@@ -17,3 +17,4 @@ pip install torch
 pip install transformers
 pip install scikit-learn
 pip install pandas numpy python-dotenv ipykernel
+pip install matplotlib

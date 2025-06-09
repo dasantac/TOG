@@ -134,9 +134,6 @@ class Arch():
   def keep(self):
     pass
 
-############################# Generic Architecture ############################
-###############################################################################
-
 # Score tracking
 def print_best(arch, data_unit):
   best = sup.best_scores[arch][data_unit]
@@ -158,66 +155,24 @@ def update_best(model:Arch):
           "data_config": model.data_config.copy(),
           "train_config": model.train_config.copy()
       })
-
+############################# Generic Architecture ############################
 ###############################################################################
-##################################### KNN #####################################
+############################ Specific Architectures ###########################
 
 from .KNN import knn
 from .KNN.knn import KNN
 from .BERT.bert import BERT
 from .BERT import bert
 
-##################################### KNN #####################################
+# Taining
+def find_best(data_unit, label_col, class_list, arch):
+  if arch == sup.TRAIN_KNN_CODE:
+    knn.try_data_configs(data_unit, label_col, class_list)
+  elif arch == sup.TRAIN_BERT_CODE:
+    bert.try_data_configs(data_unit, label_col, class_list)
+
+  print_best(arch, data_unit)
+
+############################ Specific Architectures ###########################
 ###############################################################################
 
-# Taining
-def try_data_configs(data_unit, label_col, class_list, arch):
-  data_config = {
-    "PH2" : None,
-    "PH3" : None,
-    "reducer": '',
-    "kernel": '',
-    "n": -1,
-    "data_unit": data_unit,
-    "label_col": label_col,
-    "class_list": class_list
-    }
-  
-  if arch == sup.TRAIN_KNN_CODE:
-    try_data_configs = knn.try_knn_train_configs
-  elif arch == sup.TRAIN_BERT_CODE:
-    data_config["batch_size"] = 1024
-    try_data_configs = bert.try_bert_train_configs
-
-  for PH2 in [True, False]:
-    data_config["PH2"] = PH2
-    for PH3 in [True, False]:
-      data_config["PH3"] = PH3
-      if PH3:
-        for n in sup.PH3_N_CANDIDATES:
-          data_config["n"] = n
-          if arch == sup.TRAIN_BERT_CODE:
-            data_config["input_dim"] = n
-          for reducer in sup.PH3_REDUCER_NAMES:
-            data_config["reducer"] = reducer
-            if reducer == sup.PH3_REDUCER_NAME_KPCA:
-              for kernel in sup.PH3_REDUCER_KERNEL_NAMES:
-                data_config["kernel"] = kernel
-                try_data_configs(data_config)
-            else:
-              data_config["kernel"] = ''
-              try_data_configs(data_config)
-      else:
-        data_config["n"] = -1
-        if arch == sup.TRAIN_BERT_CODE:
-          if PH2:
-            data_config["input_dim"] = 87
-          else:
-            data_config["input_dim"] = 72
-        data_config["reducer"] = ''
-        data_config["kernel"] = ''
-        try_data_configs(data_config)
-
-def find_best(data_unit, label_col, class_list, arch):
-  try_data_configs(data_unit, label_col, class_list, arch)
-  print_best(arch, data_unit)

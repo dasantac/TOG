@@ -97,7 +97,7 @@ class BERT(Arch):
   def __init__(self, data_config, df, train_config):
     # Dataset and scoring
     super().__init__(data_config, df, train_config)
-    self.seq_len = 12
+    self.seq_len = data_config["seq_len"]
     self.input_dim = data_config["input_dim"]
     self.batch_size = data_config["batch_size"]
     self.set_dataloaders()
@@ -111,6 +111,7 @@ class BERT(Arch):
     self.optimizer = train_config["optimizer"](self.me.parameters(), self.lr)
     self.loss_fn = train_config["loss_fn"]()
     self.num_epochs = train_config["num_epochs"]
+    self.loss_list = list()
 
   def set_dataloaders(self):
     y = torch.tensor(self.df[self.label_col].values, dtype=torch.long)
@@ -139,6 +140,8 @@ class BERT(Arch):
           loss.backward()
           self.optimizer.step()
           total_loss += loss.item()
+        
+        self.loss_list.append(total_loss)
 
         #print(f"Epoch {epoch+1} Loss: {total_loss / len(self.train_loader):.4f}")
   
@@ -169,7 +172,9 @@ class BERT(Arch):
                               f"{self.PH3}-"\
                               f"{self.reducer}-"\
                               f"{self.kernel}-"\
-                              f"n{self.n}.pth"
+                              f"n{self.n}-"\
+                              f"lr{self.lr}-"\
+                              f"ep{self.num_epochs}.pth"
     )
 
     torch.save(self.me.state_dict(), model_path)
@@ -210,13 +215,17 @@ def keep_scores_bert(model:BERT):
                                model.loadable, model.lr, model.optimizer, 
                                model.loss_fn, model.num_epochs])
 
-# Training functions
+# Training parameters
+BERT_N_CANDIDATES = sup.PH3_N_CANDIDATES
+BERT_REDUCER_CANDIDATES = sup.PH3_REDUCER_NAMES
+BERT_REDUCER_KERNEL_CANDIDATES = [sup.PH3_REDUCER_KERNEL_NAME_COS]
 BERT_lr_CANDIDATES = [2e-5]
 BERT_optimizer_CANDIDATES = [optim.AdamW]
 BERT_loss_fn_CANDIDATES = [nn.CrossEntropyLoss]
-BERT_num_epochs_CANDIDATES = [2]
+BERT_num_epochs_CANDIDATES = [1000]
 
-def try_bert_train_configs(data_config):
+# Training functions
+def try_train_configs(data_config):
   first = True
 
   for load_name in BERT_CANDIDATES:
@@ -249,3 +258,48 @@ def try_bert_train_configs(data_config):
 
             keep_scores_bert(model)
             update_best(model)
+
+def try_data_configs(data_unit, label_col, class_list):
+  data_config = {
+    "PH2" : None,
+    "PH3" : None,
+    "reducer": '',
+    "kernel": '',
+    "n": -1,
+    "data_unit": data_unit,
+    "label_col": label_col,
+    "class_list": class_list,
+    "batch_size": 2048
+    }
+  
+  if data_unit == sup.DATA_S_PV:
+    data_config["seq_len"] = sup.NUM_FRAMES_PER_VIDEO
+  else:
+    data_config["seq_len"] = 1
+
+  for PH2 in [True, False]:
+    data_config["PH2"] = PH2
+    for PH3 in [True, False]:
+      data_config["PH3"] = PH3
+      if PH3:
+        for n in BERT_N_CANDIDATES:
+          data_config["n"] = n
+          data_config["input_dim"] = n
+          for reducer in BERT_REDUCER_CANDIDATES:
+            data_config["reducer"] = reducer
+            if reducer == sup.PH3_REDUCER_NAME_KPCA:
+              for kernel in BERT_REDUCER_KERNEL_CANDIDATES:
+                data_config["kernel"] = kernel
+                try_train_configs(data_config)
+            else:
+              data_config["kernel"] = ''
+              try_train_configs(data_config)
+      else:
+        data_config["n"] = -1
+        if PH2:
+          data_config["input_dim"] = 87
+        else:
+          data_config["input_dim"] = 72
+        data_config["reducer"] = ''
+        data_config["kernel"] = ''
+        try_train_configs(data_config)

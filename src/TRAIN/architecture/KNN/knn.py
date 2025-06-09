@@ -75,7 +75,7 @@ def keep_scores_knn(model:KNN):
 # Training functions
 TRAIN_KNN_K_CANDIDATES = [k for k in range(1,16)]
 
-def try_knn_train_configs(data_config):
+def try_train_configs(data_config):
   for k in TRAIN_KNN_K_CANDIDATES:
     train_config = {"arch" : sup.TRAIN_KNN_CODE, "k" : k}
     if k == 1:
@@ -89,3 +89,37 @@ def try_knn_train_configs(data_config):
 
     keep_scores_knn(model)
     update_best(model)
+
+def try_data_configs(data_unit, label_col, class_list):
+  data_config = {
+    "PH2" : None,
+    "PH3" : None,
+    "reducer": '',
+    "kernel": '',
+    "n": -1,
+    "data_unit": data_unit,
+    "label_col": label_col,
+    "class_list": class_list
+    }
+  
+  for PH2 in [True, False]:
+    data_config["PH2"] = PH2
+    for PH3 in [True, False]:
+      data_config["PH3"] = PH3
+      if PH3:
+        for n in sup.PH3_N_CANDIDATES:
+          data_config["n"] = n
+          for reducer in sup.PH3_REDUCER_NAMES:
+            data_config["reducer"] = reducer
+            if reducer == sup.PH3_REDUCER_NAME_KPCA:
+              for kernel in sup.PH3_REDUCER_KERNEL_NAMES:
+                data_config["kernel"] = kernel
+                try_train_configs(data_config)
+            else:
+              data_config["kernel"] = ''
+              try_train_configs(data_config)
+      else:
+        data_config["n"] = -1
+        data_config["reducer"] = ''
+        data_config["kernel"] = ''
+        try_train_configs(data_config)
