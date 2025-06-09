@@ -1,0 +1,141 @@
+class_list,accuracy,data_unit,PH2,PH3,reducer,kernel,n,loadable,lr,optimizer,loss_fn,num_epochs
+two-classes,0.7109375,Spf,True,True,umap,None,3,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100
+two-classes,0.685546875,Spf,True,True,umap,None,7,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100
+two-classes,0.6953125,Spf,True,True,umap,None,11,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100
+two-classes,0.671875,Spf,True,True,umap,None,15,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100
+two-classes,0.9375,Spf,True,False,None,None,-1,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100
+two-classes,0.78515625,Spf,False,True,umap,None,3,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100
+two-classes,0.841796875,Spf,False,True,umap,None,7,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100
+two-classes,0.748046875,Spf,False,True,umap,None,11,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100
+two-classes,0.775390625,Spf,False,True,umap,None,15,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100
+two-classes,0.962890625,Spf,False,False,None,None,-1,distilbert-base-uncased,1e-05,"AdamW (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    decoupled_weight_decay: True
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.01
+)",CrossEntropyLoss(),100

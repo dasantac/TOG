@@ -158,6 +158,7 @@ PH3_REDUCER_KERNEL_NAMES = [PH3_REDUCER_KERNEL_NAME_POLY,
 
 TRAIN_BINLOAD_ROOT = os.path.join(BIN_ROOT, 'load', 'TRAIN')
 TRAIN_BINGEN_ROOT = os.path.join(BIN_ROOT, 'gen', 'TRAIN')
+TRAIN_MEDIAGEN_ROOT = os.path.join(MEDIA_ROOT, 'gen', 'TRAIN')
 TRAIN_SCORES_ROOT = os.path.join(SCORES_ROOT)
 TRAIN_KNN_CODE = 'KNN'
 TRAIN_BERT_CODE = 'BERT'
@@ -298,7 +299,7 @@ knn_score_tracker = []
 
 ## BERT
 bert_scores_columns = ["class_list", "accuracy", "data_unit", "PH2", "PH3", 
-                      "reducer", "kernel", "n", "loadble", "lr", "optimizer",
+                      "reducer", "kernel", "n", "loadable", "lr", "optimizer",
                       "loss_fn", "num_epochs"]
 bert_score_tracker = []
 

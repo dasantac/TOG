@@ -8,6 +8,7 @@ sys.path.append(os.environ["PYTHONPATH"])
 # Load project-wide variables
 import superheader as sup
 from ..archeader import Arch
+from ..archeader import print_best
 from ..archeader import update_best
 
 import torch
@@ -22,6 +23,9 @@ device = torch.device("mps" if torch.backends.mps.is_available()
                       else "cuda" if torch.cuda.is_available()
                       else "cpu")
 print(f"device: {device}")
+
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 ### Helper classes ###
 # --- Custom BERT Embeddings ---
@@ -127,23 +131,29 @@ class BERT(Arch):
     self.test_loader = DataLoader(TensorDataset(self.X_test, self.y_test), 
                                     batch_size=self.batch_size)
   
-  def fit(self):
-     self.me.train()
+  def fit(self, verbose=False):
+    self.me.train()
 
-     for epoch in range(self.num_epochs):
-        total_loss = 0
-        for xb, yb in self.train_loader:
-          xb, yb = xb.to(self.device), yb.to(self.device)
-          self.optimizer.zero_grad()
-          logits = self.me(xb)
-          loss = self.loss_fn(logits, yb)
-          loss.backward()
-          self.optimizer.step()
-          total_loss += loss.item()
-        
-        self.loss_list.append(total_loss)
+    epoch_iter = range(self.num_epochs)
+    if verbose:
+      epoch_iter = tqdm(epoch_iter, desc="Training", unit="epoch", leave=False)
 
-        #print(f"Epoch {epoch+1} Loss: {total_loss / len(self.train_loader):.4f}")
+    for epoch in epoch_iter:
+      total_loss = 0
+
+      for xb, yb in self.train_loader:
+        xb, yb = xb.to(self.device), yb.to(self.device)
+        self.optimizer.zero_grad()
+        logits = self.me(xb)
+        loss = self.loss_fn(logits, yb)
+        loss.backward()
+        self.optimizer.step()
+        total_loss += loss.item()
+
+      self.loss_list.append(total_loss)
+
+      if verbose:
+        epoch_iter.set_postfix(epoch=epoch+1, loss=total_loss)
   
   def score(self):
     self.me.eval()
@@ -162,11 +172,56 @@ class BERT(Arch):
 
     self.accuracy = accuracy_score(y_true, y_pred)
 
+  def plot_loss(self):
+    self.fig, ax = plt.subplots(figsize=(20, 16))
+    ax.plot(range(1, len(self.loss_list) + 1), self.loss_list)
+    ax.set_xlabel('Epoch', fontsize=20)
+    ax.set_ylabel('Loss', fontsize=20)
+    ax.tick_params(axis='x', labelsize=18)
+    ax.tick_params(axis='y', labelsize=18)
+    self.fig.suptitle(f'Training Loss over {len(self.loss_list)} Epochs', fontsize=30)
+    ax.set_title(str(self.data_config) + "\n" + str(self.train_config), fontsize=15)
+
+    # Add accuracy box
+    ax.text(0.99, 0.99, f"Accuracy: {self.accuracy:.3f}",
+            transform=ax.transAxes,
+            fontsize=16,
+            ha='right', va='top',
+            bbox=dict(facecolor='white', edgecolor='black', boxstyle='round', alpha=0.8))
+
+    ax.legend()
+    self.fig.tight_layout()
+
+  def show_loss(self):
+    self.plot_loss()
+    self.fig.show()
+
+  def keep_loss(self):
+    loss_path_dir = os.path.join(sup.TRAIN_MEDIAGEN_ROOT, self.class_list, 
+                                       sup.TRAIN_BERT_CODE, self.data_unit,
+                                       self.loadable)
+    sup.create_dir_if_not_exists(loss_path_dir)
+
+    loss_path = os.path.join(loss_path_dir,
+                              f"{self.PH2}-"\
+                              f"{self.PH3}-"\
+                              f"{self.reducer}-"\
+                              f"{self.kernel}-"\
+                              f"n{self.n}-"\
+                              f"lr{self.lr}-"\
+                              f"ep{len(self.loss_list)}"\
+                              f"s{self.accuracy}.jpg"
+    )
+
+    self.plot_loss()
+    self.fig.savefig(loss_path, dpi=300, bbox_inches='tight')
+
   def keep(self):
     model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, self.class_list, 
                                        sup.TRAIN_BERT_CODE, self.data_unit,
                                        self.loadable)
     sup.create_dir_if_not_exists(model_path_dir)
+
     model_path = os.path.join(model_path_dir,
                               f"{self.PH2}-"\
                               f"{self.PH3}-"\
@@ -174,10 +229,15 @@ class BERT(Arch):
                               f"{self.kernel}-"\
                               f"n{self.n}-"\
                               f"lr{self.lr}-"\
-                              f"ep{self.num_epochs}.pth"
+                              f"ep{len(self.loss_list)}"\
+                              f"s{self.accuracy}.pth"
     )
 
+
     torch.save(self.me.state_dict(), model_path)
+    
+    # Also save training loss information
+    self.keep_loss()
      
 
 ############################## BERT architecture ##############################
@@ -198,7 +258,7 @@ DISTILBERT= "distilbert-base-uncased"
 BERT_TINY="prajjwal1/bert-tiny"
 BERT_BASE="bert-base-uncased"
 BERT_LARGE="bert-large-uncased"
-BERT_CANDIDATES = [BERT_TINY]
+BERT_LOADABLE_CANDIDATES = [BERT_TINY]
 
 download_if_not_exists(DISTILBERT)
 download_if_not_exists(BERT_TINY)
@@ -216,32 +276,39 @@ def keep_scores_bert(model:BERT):
                                model.loss_fn, model.num_epochs])
 
 # Training parameters
-BERT_N_CANDIDATES = sup.PH3_N_CANDIDATES
-BERT_REDUCER_CANDIDATES = sup.PH3_REDUCER_NAMES
-BERT_REDUCER_KERNEL_CANDIDATES = [sup.PH3_REDUCER_KERNEL_NAME_COS]
-BERT_lr_CANDIDATES = [2e-5]
+BERT_PH2_CANDIDATES = [True, False]
+BERT_PH3_CANDIDATES = [True, False]
+BERT_N_CANDIDATES = [3, 7, 11, 15]
+BERT_REDUCER_CANDIDATES = [sup.PH3_REDUCER_NAME_UMAP]
+BERT_REDUCER_KERNEL_CANDIDATES = []
+BERT_lr_CANDIDATES = [1e-5]
 BERT_optimizer_CANDIDATES = [optim.AdamW]
 BERT_loss_fn_CANDIDATES = [nn.CrossEntropyLoss]
 BERT_num_epochs_CANDIDATES = [1000]
 
 # Training functions
-def try_train_configs(data_config):
+def try_train_configs(data_config,
+                      LOADABLE_CANDIDATES=BERT_LOADABLE_CANDIDATES,
+                      lr_CANDIDATES=BERT_lr_CANDIDATES,
+                      optimizer_CANDIDATES=BERT_optimizer_CANDIDATES,
+                      loss_fn_CANDIDATES=BERT_loss_fn_CANDIDATES,
+                      num_epochs_CANDIDATES=BERT_num_epochs_CANDIDATES):
   first = True
 
-  for load_name in BERT_CANDIDATES:
-    for lr in BERT_lr_CANDIDATES:
-      for optimizer in BERT_optimizer_CANDIDATES:
-        for loss_fn in BERT_loss_fn_CANDIDATES:
-          for num_epochs in BERT_num_epochs_CANDIDATES:
+  for load_name in LOADABLE_CANDIDATES:
+    for lr in lr_CANDIDATES:
+      for optimizer in optimizer_CANDIDATES:
+        for loss_fn in loss_fn_CANDIDATES:
+          for num_epochs in num_epochs_CANDIDATES:
 
             train_config = {
               "arch" : sup.TRAIN_BERT_CODE,
               "device" : device,
-               "loadable" : load_name,
-               "optimizer" : optimizer,
-               "lr" : lr,
-               "loss_fn" : loss_fn,
-               "num_epochs" : num_epochs
+              "loadable" : load_name,
+              "optimizer" : optimizer,
+              "lr" : lr,
+              "loss_fn" : loss_fn,
+              "num_epochs" : num_epochs
             }
 
             if first:
@@ -259,7 +326,17 @@ def try_train_configs(data_config):
             keep_scores_bert(model)
             update_best(model)
 
-def try_data_configs(data_unit, label_col, class_list):
+def try_data_configs(data_unit, label_col, class_list,
+                     PH2_CANDIDATES=BERT_PH2_CANDIDATES,
+                     PH3_CANDIDATES=BERT_PH3_CANDIDATES,
+                     N_CANDIDATES=BERT_N_CANDIDATES,
+                     REDUCER_CANDIDATES=BERT_REDUCER_CANDIDATES,
+                     KERNEL_CANDIDATES=BERT_REDUCER_KERNEL_CANDIDATES,
+                     LOADABLE_CANDIDATES=BERT_LOADABLE_CANDIDATES,
+                     lr_CANDIDATES=BERT_lr_CANDIDATES,
+                     optimizer_CANDIDATES=BERT_optimizer_CANDIDATES,
+                     loss_fn_CANDIDATES=BERT_loss_fn_CANDIDATES,
+                     num_epochs_CANDIDATES=BERT_num_epochs_CANDIDATES):
   data_config = {
     "PH2" : None,
     "PH3" : None,
@@ -269,7 +346,7 @@ def try_data_configs(data_unit, label_col, class_list):
     "data_unit": data_unit,
     "label_col": label_col,
     "class_list": class_list,
-    "batch_size": 2048
+    "batch_size": 1024
     }
   
   if data_unit == sup.DATA_S_PV:
@@ -277,23 +354,33 @@ def try_data_configs(data_unit, label_col, class_list):
   else:
     data_config["seq_len"] = 1
 
-  for PH2 in [True, False]:
+  for PH2 in PH2_CANDIDATES:
     data_config["PH2"] = PH2
-    for PH3 in [True, False]:
+    for PH3 in PH3_CANDIDATES:
       data_config["PH3"] = PH3
       if PH3:
-        for n in BERT_N_CANDIDATES:
+        for n in N_CANDIDATES:
           data_config["n"] = n
           data_config["input_dim"] = n
-          for reducer in BERT_REDUCER_CANDIDATES:
+          for reducer in REDUCER_CANDIDATES:
             data_config["reducer"] = reducer
             if reducer == sup.PH3_REDUCER_NAME_KPCA:
-              for kernel in BERT_REDUCER_KERNEL_CANDIDATES:
+              for kernel in KERNEL_CANDIDATES:
                 data_config["kernel"] = kernel
-                try_train_configs(data_config)
+                try_train_configs(data_config=data_config,
+                      LOADABLE_CANDIDATES=LOADABLE_CANDIDATES,
+                      lr_CANDIDATES=lr_CANDIDATES,
+                      optimizer_CANDIDATES=optimizer_CANDIDATES,
+                      loss_fn_CANDIDATES=loss_fn_CANDIDATES,
+                      num_epochs_CANDIDATES=num_epochs_CANDIDATES)
             else:
               data_config["kernel"] = ''
-              try_train_configs(data_config)
+              try_train_configs(data_config=data_config,
+                      LOADABLE_CANDIDATES=LOADABLE_CANDIDATES,
+                      lr_CANDIDATES=lr_CANDIDATES,
+                      optimizer_CANDIDATES=optimizer_CANDIDATES,
+                      loss_fn_CANDIDATES=loss_fn_CANDIDATES,
+                      num_epochs_CANDIDATES=num_epochs_CANDIDATES)
       else:
         data_config["n"] = -1
         if PH2:
@@ -302,4 +389,35 @@ def try_data_configs(data_unit, label_col, class_list):
           data_config["input_dim"] = 72
         data_config["reducer"] = ''
         data_config["kernel"] = ''
-        try_train_configs(data_config)
+        try_train_configs(data_config=data_config,
+                      LOADABLE_CANDIDATES=LOADABLE_CANDIDATES,
+                      lr_CANDIDATES=lr_CANDIDATES,
+                      optimizer_CANDIDATES=optimizer_CANDIDATES,
+                      loss_fn_CANDIDATES=loss_fn_CANDIDATES,
+                      num_epochs_CANDIDATES=num_epochs_CANDIDATES)
+        
+def find_best(data_unit, label_col, class_list,
+                     PH2_CANDIDATES=BERT_PH2_CANDIDATES,
+                     PH3_CANDIDATES=BERT_PH3_CANDIDATES,
+                     N_CANDIDATES=BERT_N_CANDIDATES,
+                     REDUCER_CANDIDATES=BERT_REDUCER_CANDIDATES,
+                     KERNEL_CANDIDATES=BERT_REDUCER_KERNEL_CANDIDATES,
+                     LOADABLE_CANDIDATES=BERT_LOADABLE_CANDIDATES,
+                     lr_CANDIDATES=BERT_lr_CANDIDATES,
+                     optimizer_CANDIDATES=BERT_optimizer_CANDIDATES,
+                     loss_fn_CANDIDATES=BERT_loss_fn_CANDIDATES,
+                     num_epochs_CANDIDATES=BERT_num_epochs_CANDIDATES):
+  
+  try_data_configs(data_unit, label_col, class_list,
+                     PH2_CANDIDATES=PH2_CANDIDATES,
+                     PH3_CANDIDATES=PH3_CANDIDATES,
+                     N_CANDIDATES=N_CANDIDATES,
+                     REDUCER_CANDIDATES=REDUCER_CANDIDATES,
+                     KERNEL_CANDIDATES=KERNEL_CANDIDATES,
+                     LOADABLE_CANDIDATES=LOADABLE_CANDIDATES,
+                     lr_CANDIDATES=lr_CANDIDATES,
+                     optimizer_CANDIDATES=optimizer_CANDIDATES,
+                     loss_fn_CANDIDATES=loss_fn_CANDIDATES,
+                     num_epochs_CANDIDATES=num_epochs_CANDIDATES)
+  
+  print_best(sup.TRAIN_BERT_CODE, data_unit)

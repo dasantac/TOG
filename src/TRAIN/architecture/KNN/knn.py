@@ -8,6 +8,7 @@ sys.path.append(os.environ["PYTHONPATH"])
 # Load project-wide variables
 import superheader as sup
 from ..archeader import Arch
+from ..archeader import print_best
 from ..archeader import update_best
 
 from sklearn.neighbors import KNeighborsClassifier
@@ -123,3 +124,9 @@ def try_data_configs(data_unit, label_col, class_list):
         data_config["reducer"] = ''
         data_config["kernel"] = ''
         try_train_configs(data_config)
+
+
+def find_best(data_unit, label_col, class_list):
+  try_data_configs(data_unit, label_col, class_list)
+  
+  print_best(sup.TRAIN_KNN_CODE, data_unit)

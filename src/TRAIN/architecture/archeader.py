@@ -164,15 +164,6 @@ from .KNN.knn import KNN
 from .BERT.bert import BERT
 from .BERT import bert
 
-# Taining
-def find_best(data_unit, label_col, class_list, arch):
-  if arch == sup.TRAIN_KNN_CODE:
-    knn.try_data_configs(data_unit, label_col, class_list)
-  elif arch == sup.TRAIN_BERT_CODE:
-    bert.try_data_configs(data_unit, label_col, class_list)
-
-  print_best(arch, data_unit)
-
 ############################ Specific Architectures ###########################
 ###############################################################################
 
