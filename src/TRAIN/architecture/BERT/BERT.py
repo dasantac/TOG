@@ -346,7 +346,7 @@ def try_data_configs(data_unit, label_col, class_list,
     "data_unit": data_unit,
     "label_col": label_col,
     "class_list": class_list,
-    "batch_size": 1024
+    "batch_size": 256
     }
   
   if data_unit == sup.DATA_S_PV:
