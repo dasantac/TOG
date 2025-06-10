@@ -112,10 +112,15 @@ class BERT(Arch):
     self.me = BertWithCustomInput(self.loadable, self.input_dim)
     self.me.to(self.device)
     self.lr = train_config["lr"]
-    self.optimizer = train_config["optimizer"](self.me.parameters(), self.lr)
+    self.weight_decay = train_config["weight_decay"]
+    self.optimizer = train_config["optimizer"](self.me.parameters(), 
+                                               lr=self.lr,
+                                               weight_decay=self.weight_decay)
     self.loss_fn = train_config["loss_fn"]()
     self.num_epochs = train_config["num_epochs"]
     self.loss_list = list()
+    self.score_list = list()
+    self.score_tracking_rate = self.num_epochs // 25
 
   def set_dataloaders(self):
     y = torch.tensor(self.df[self.label_col].values, dtype=torch.long)
@@ -131,7 +136,7 @@ class BERT(Arch):
     self.test_loader = DataLoader(TensorDataset(self.X_test, self.y_test), 
                                     batch_size=self.batch_size)
   
-  def fit(self, verbose=False):
+  def fit(self, verbose=False, perfect=False):
     self.me.train()
 
     epoch_iter = range(self.num_epochs)
@@ -151,6 +156,11 @@ class BERT(Arch):
         total_loss += loss.item()
 
       self.loss_list.append(total_loss)
+
+      if perfect:
+        if epoch % 1000 == 999:
+          self.lr = self.lr / 2
+          print(epoch, self.lr)
 
       if verbose:
         epoch_iter.set_postfix(epoch=epoch+1, loss=total_loss)
@@ -172,6 +182,29 @@ class BERT(Arch):
 
     self.accuracy = accuracy_score(y_true, y_pred)
 
+  def show_scores(self):
+    fig, ax = plt.subplots(figsize=(20, 16))
+    ax.plot(range(1*self.score_tracking_rate, 
+                  (len(self.score_list) + 1)*self.score_tracking_rate, 
+                  self.score_tracking_rate), 
+                  self.score_list)
+    ax.set_xlabel('Epoch', fontsize=20)
+    ax.set_ylabel('Score', fontsize=20)
+    ax.tick_params(axis='x', labelsize=18)
+    ax.tick_params(axis='y', labelsize=18)
+    self.fig.suptitle(f'Training Loss over {len(self.loss_list)} Epochs', fontsize=30)
+    ax.set_title(str(self.data_config) + "\n" + str(self.train_config), fontsize=15)
+
+    # Add accuracy box
+    ax.text(0.99, 0.99, f"Accuracy: {self.accuracy:.3f}",
+            transform=ax.transAxes,
+            fontsize=16,
+            ha='right', va='top',
+            bbox=dict(facecolor='white', edgecolor='black', boxstyle='round', alpha=0.8))
+
+    ax.legend()
+    fig.tight_layout()
+  
   def plot_loss(self):
     self.fig, ax = plt.subplots(figsize=(20, 16))
     ax.plot(range(1, len(self.loss_list) + 1), self.loss_list)
