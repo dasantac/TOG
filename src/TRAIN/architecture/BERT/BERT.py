@@ -17,7 +17,9 @@ import torch.optim as optim
 from transformers import BertModel
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import (
+    accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
+)
 
 device = torch.device("mps" if torch.backends.mps.is_available()
                       else "cuda" if torch.cuda.is_available()
@@ -25,6 +27,8 @@ device = torch.device("mps" if torch.backends.mps.is_available()
 print(f"device: {device}")
 
 import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
 from tqdm import tqdm
 
 ### Helper classes ###
@@ -71,7 +75,7 @@ class CustomBertEmbeddings(nn.Module):
 # --- Model ---
 
 class BertWithCustomInput(nn.Module):
-  def __init__(self, loadable, input_dim):
+  def __init__(self, loadable, input_dim, output_dim):
     super().__init__()
     loadable_path = os.path.join(sup.TRAIN_BINLOAD_ROOT, loadable)
     self.bert = BertModel.from_pretrained(loadable_path)
@@ -80,7 +84,7 @@ class BertWithCustomInput(nn.Module):
         hidden_size=self.bert.config.hidden_size
     )
 
-    self.classifier = nn.Linear(self.bert.config.hidden_size, input_dim)
+    self.classifier = nn.Linear(self.bert.config.hidden_size, output_dim)
 
   def forward(self, x):
     B, L, _ = x.shape
@@ -103,13 +107,14 @@ class BERT(Arch):
     super().__init__(data_config, df, train_config)
     self.seq_len = data_config["seq_len"]
     self.input_dim = data_config["input_dim"]
+    self.output_dim = len(self.class_numeric_list)
     self.batch_size = data_config["batch_size"]
     self.set_dataloaders()
 
     # Model
     self.device = train_config["device"]
     self.loadable = train_config["loadable"]
-    self.me = BertWithCustomInput(self.loadable, self.input_dim)
+    self.me = BertWithCustomInput(self.loadable, self.input_dim, self.output_dim)
     self.me.to(self.device)
     self.lr = train_config["lr"]
     self.weight_decay = train_config["weight_decay"]
@@ -119,6 +124,16 @@ class BERT(Arch):
     self.loss_fn = train_config["loss_fn"]()
     self.num_epochs = train_config["num_epochs"]
     self.loss_list = list()
+    self.loss_fig = None
+
+    # score
+    self.accuracy = None
+    self.macro_f1 = None
+    self.per_class_f1 = None
+    self.macro_precision = None
+    self.macro_recall = None
+    self.confusion = None
+
     self.score_list = list()
     self.score_tracking_rate = self.num_epochs // 25
 
@@ -136,7 +151,7 @@ class BERT(Arch):
     self.test_loader = DataLoader(TensorDataset(self.X_test, self.y_test), 
                                     batch_size=self.batch_size)
   
-  def fit(self, verbose=False, perfect=False):
+  def fit(self, verbose=False):
     self.me.train()
 
     epoch_iter = range(self.num_epochs)
@@ -157,11 +172,6 @@ class BERT(Arch):
 
       self.loss_list.append(total_loss)
 
-      if perfect:
-        if epoch % 1000 == 999:
-          self.lr = self.lr / 2
-          print(epoch, self.lr)
-
       if verbose:
         epoch_iter.set_postfix(epoch=epoch+1, loss=total_loss)
   
@@ -181,6 +191,46 @@ class BERT(Arch):
     y_true = torch.cat(all_labels)
 
     self.accuracy = accuracy_score(y_true, y_pred)
+
+  def full_score(self):
+    self.me.eval()
+
+    all_preds, all_labels = [], []
+    all_logits = []
+
+    with torch.no_grad():
+      for xb, yb in self.test_loader:
+          xb = xb.to(self.device)
+          logits = self.me(xb)
+          preds = logits.argmax(dim=1)
+          all_preds.append(preds.cpu())
+          all_labels.append(yb.cpu())
+          all_logits.append(logits.cpu())
+
+    y_pred = torch.cat(all_preds)
+    y_true = torch.cat(all_labels)
+
+    self.accuracy = accuracy_score(y_true, y_pred)
+    self.macro_f1 = f1_score(y_true, y_pred, average='macro')
+    self.macro_precision = precision_score(y_true, y_pred, average='macro')
+    self.macro_recall = recall_score(y_true, y_pred, average='macro')
+    self.confusion = confusion_matrix(y_true, y_pred)
+      
+  def plot_confusion_matrix(self):
+
+    title="Confusion Matrix"
+    cmap="Blues"
+    figsize=(8, 6)
+
+    plt.figure(figsize=figsize)
+    sns.heatmap(self.confusion, annot=True, fmt="d", cmap=cmap,
+                xticklabels=self.class_name_list,
+                yticklabels=self.class_name_list)
+    plt.title(title)
+    plt.ylabel("True Label")
+    plt.xlabel("Predicted Label")
+    plt.tight_layout()
+    plt.show()
 
   def show_scores(self):
     fig, ax = plt.subplots(figsize=(20, 16))
@@ -206,13 +256,13 @@ class BERT(Arch):
     fig.tight_layout()
   
   def plot_loss(self):
-    self.fig, ax = plt.subplots(figsize=(20, 16))
+    self.loss_fig, ax = plt.subplots(figsize=(20, 16))
     ax.plot(range(1, len(self.loss_list) + 1), self.loss_list)
     ax.set_xlabel('Epoch', fontsize=20)
     ax.set_ylabel('Loss', fontsize=20)
     ax.tick_params(axis='x', labelsize=18)
     ax.tick_params(axis='y', labelsize=18)
-    self.fig.suptitle(f'Training Loss over {len(self.loss_list)} Epochs', fontsize=30)
+    self.loss_fig.suptitle(f'Training Loss over {len(self.loss_list)} Epochs', fontsize=30)
     ax.set_title(str(self.data_config) + "\n" + str(self.train_config), fontsize=15)
 
     # Add accuracy box
@@ -222,11 +272,11 @@ class BERT(Arch):
             ha='right', va='top',
             bbox=dict(facecolor='white', edgecolor='black', boxstyle='round', alpha=0.8))
 
-    self.fig.tight_layout()
+    self.loss_fig.tight_layout()
 
   def show_loss(self):
     self.plot_loss()
-    self.fig.show()
+    self.loss_fig.show()
 
   def keep_loss(self):
     loss_path_dir = os.path.join(sup.TRAIN_MEDIAGEN_ROOT, self.class_list, 
@@ -246,7 +296,7 @@ class BERT(Arch):
     )
 
     self.plot_loss()
-    self.fig.savefig(loss_path, dpi=300, bbox_inches='tight')
+    self.loss_fig.savefig(loss_path, dpi=300, bbox_inches='tight')
 
   def keep(self):
     model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, self.class_list, 

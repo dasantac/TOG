@@ -30,8 +30,17 @@ class Arch():
     self.data_unit = data_config["data_unit"]
     self.label_col = data_config["label_col"]
     self.class_list = data_config["class_list"]
-    self.class_numeric_list = sup.get_class_numeric_list(
-                                sup.get_class_list(data_config["class_list"]))
+    if self.class_list == 'specified':
+      self.class_numeric_list = data_config["class_numeric_list"]
+    else:
+      self.class_numeric_list = sup.get_class_numeric_list(
+                                  sup.get_class_list(data_config["class_list"])
+                                  )
+    self.class_name_list = sup.get_class_name_list(self.class_numeric_list)
+    self.label_map = {label : i for i, label in 
+                      enumerate(self.class_numeric_list)}
+    self.label_reverse = {i : label for i, label in 
+                      enumerate(self.class_numeric_list)}
     self.test_ratio = 0.2
 
     if df is None:
@@ -106,6 +115,7 @@ class Arch():
 
   def __filter_class_list(self):
     self.df = self.df[self.df['class_numeric'].isin(self.class_numeric_list)]
+    self.df['class_numeric'] = self.df['class_numeric'].apply(lambda x : self.label_map[x])
     return self.df
   
   def set_dataframe(self):

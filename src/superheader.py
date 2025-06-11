@@ -30,8 +30,8 @@ NUMBERS_TO_CLASSES = {i : ALL_CLASSES_LIST[i] for i in \
 #NUM_CLASSES = "three-classes"
 #NUM_CLASSES = "six-classes"
 #NUM_CLASSES = "ten-classes"
-#NUM_CLASSES = "alpha-classes"
-NUM_CLASSES = "all-classes"
+NUM_CLASSES = "alpha-classes"
+#NUM_CLASSES = "all-classes"
 
 print(f"\n\nChosen class grouping: {NUM_CLASSES}\n\n")
 
@@ -55,6 +55,9 @@ def get_class_list(list_name):
 
 def get_class_numeric_list(class_list):
   return [CLASSES_TO_NUMBERS[c] for c in class_list]
+
+def get_class_name_list(class_list):
+  return [NUMBERS_TO_CLASSES[n] for n in class_list]
 
 CLASSES_LIST = get_class_list(NUM_CLASSES)
 CLASSES_REGEX_GROUP = '|'.join(CLASSES_LIST)
