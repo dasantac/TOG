@@ -222,7 +222,6 @@ class BERT(Arch):
             ha='right', va='top',
             bbox=dict(facecolor='white', edgecolor='black', boxstyle='round', alpha=0.8))
 
-    ax.legend()
     self.fig.tight_layout()
 
   def show_loss(self):
