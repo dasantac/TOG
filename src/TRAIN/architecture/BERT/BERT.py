@@ -17,18 +17,12 @@ import torch.optim as optim
 from transformers import BertModel
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import (
-    accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
-)
 
 device = torch.device("mps" if torch.backends.mps.is_available()
                       else "cuda" if torch.cuda.is_available()
                       else "cpu")
 print(f"device: {device}")
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
 from tqdm import tqdm
 
 ### Helper classes ###
@@ -123,19 +117,6 @@ class BERT(Arch):
                                                weight_decay=self.weight_decay)
     self.loss_fn = train_config["loss_fn"]()
     self.num_epochs = train_config["num_epochs"]
-    self.loss_list = list()
-    self.loss_fig = None
-
-    # score
-    self.accuracy = None
-    self.macro_f1 = None
-    self.per_class_f1 = None
-    self.macro_precision = None
-    self.macro_recall = None
-    self.confusion = None
-
-    self.score_list = list()
-    self.score_tracking_rate = self.num_epochs // 25
 
   def set_dataloaders(self):
     y = torch.tensor(self.df[self.label_col].values, dtype=torch.long)
@@ -174,11 +155,11 @@ class BERT(Arch):
 
       if verbose:
         epoch_iter.set_postfix(epoch=epoch+1, loss=total_loss)
-  
-  def score(self):
-    self.me.eval()
 
+  def test(self):
+    self.me.eval()
     all_preds, all_labels = [], []
+    all_logits = []
     with torch.no_grad():
       for xb, yb in self.test_loader:
           xb = xb.to(self.device)
@@ -186,102 +167,17 @@ class BERT(Arch):
           preds = logits.argmax(dim=1).cpu()
           all_preds.append(preds)
           all_labels.append(yb)
-
-    y_pred = torch.cat(all_preds)
-    y_true = torch.cat(all_labels)
-
-    self.accuracy = accuracy_score(y_true, y_pred)
-
-  def full_score(self):
-    self.me.eval()
-
-    all_preds, all_labels = [], []
-    all_logits = []
-
-    with torch.no_grad():
-      for xb, yb in self.test_loader:
-          xb = xb.to(self.device)
-          logits = self.me(xb)
-          preds = logits.argmax(dim=1)
-          all_preds.append(preds.cpu())
-          all_labels.append(yb.cpu())
           all_logits.append(logits.cpu())
 
-    y_pred = torch.cat(all_preds)
-    y_true = torch.cat(all_labels)
-
-    self.accuracy = accuracy_score(y_true, y_pred)
-    self.macro_f1 = f1_score(y_true, y_pred, average='macro')
-    self.macro_precision = precision_score(y_true, y_pred, average='macro')
-    self.macro_recall = recall_score(y_true, y_pred, average='macro')
-    self.confusion = confusion_matrix(y_true, y_pred)
+    self.y_true = torch.cat(all_labels)
+    self.y_logits = torch.cat(all_logits)
+    self.y_pred = torch.cat(all_preds)
       
-  def plot_confusion_matrix(self):
-
-    title="Confusion Matrix"
-    cmap="Blues"
-    figsize=(8, 6)
-
-    plt.figure(figsize=figsize)
-    sns.heatmap(self.confusion, annot=True, fmt="d", cmap=cmap,
-                xticklabels=self.class_name_list,
-                yticklabels=self.class_name_list)
-    plt.title(title)
-    plt.ylabel("True Label")
-    plt.xlabel("Predicted Label")
-    plt.tight_layout()
-    plt.show()
-
-  def show_scores(self):
-    fig, ax = plt.subplots(figsize=(20, 16))
-    ax.plot(range(1*self.score_tracking_rate, 
-                  (len(self.score_list) + 1)*self.score_tracking_rate, 
-                  self.score_tracking_rate), 
-                  self.score_list)
-    ax.set_xlabel('Epoch', fontsize=20)
-    ax.set_ylabel('Score', fontsize=20)
-    ax.tick_params(axis='x', labelsize=18)
-    ax.tick_params(axis='y', labelsize=18)
-    self.fig.suptitle(f'Training Loss over {len(self.loss_list)} Epochs', fontsize=30)
-    ax.set_title(str(self.data_config) + "\n" + str(self.train_config), fontsize=15)
-
-    # Add accuracy box
-    ax.text(0.99, 0.99, f"Accuracy: {self.accuracy:.3f}",
-            transform=ax.transAxes,
-            fontsize=16,
-            ha='right', va='top',
-            bbox=dict(facecolor='white', edgecolor='black', boxstyle='round', alpha=0.8))
-
-    ax.legend()
-    fig.tight_layout()
-  
-  def plot_loss(self):
-    self.loss_fig, ax = plt.subplots(figsize=(20, 16))
-    ax.plot(range(1, len(self.loss_list) + 1), self.loss_list)
-    ax.set_xlabel('Epoch', fontsize=20)
-    ax.set_ylabel('Loss', fontsize=20)
-    ax.tick_params(axis='x', labelsize=18)
-    ax.tick_params(axis='y', labelsize=18)
-    self.loss_fig.suptitle(f'Training Loss over {len(self.loss_list)} Epochs', fontsize=30)
-    ax.set_title(str(self.data_config) + "\n" + str(self.train_config), fontsize=15)
-
-    # Add accuracy box
-    ax.text(0.99, 0.99, f"Accuracy: {self.accuracy:.3f}",
-            transform=ax.transAxes,
-            fontsize=16,
-            ha='right', va='top',
-            bbox=dict(facecolor='white', edgecolor='black', boxstyle='round', alpha=0.8))
-
-    self.loss_fig.tight_layout()
-
-  def show_loss(self):
-    self.plot_loss()
-    self.loss_fig.show()
-
   def keep_loss(self):
-    loss_path_dir = os.path.join(sup.TRAIN_MEDIAGEN_ROOT, self.class_list, 
+    loss_path_dir = os.path.join(sup.TRAIN_MEDIAGEN_ROOT, self.class_list,
+                                       str(len(self.class_numeric_list)), 
                                        sup.TRAIN_BERT_CODE, self.data_unit,
-                                       self.loadable)
+                                       self.loadable, "loss")
     sup.create_dir_if_not_exists(loss_path_dir)
 
     loss_path = os.path.join(loss_path_dir,
@@ -298,8 +194,30 @@ class BERT(Arch):
     self.plot_loss()
     self.loss_fig.savefig(loss_path, dpi=300, bbox_inches='tight')
 
+  def keep_confusion_matrix(self):
+    confusion_path_dir = os.path.join(sup.TRAIN_MEDIAGEN_ROOT, self.class_list,
+                                       str(len(self.class_numeric_list)),  
+                                       sup.TRAIN_BERT_CODE, self.data_unit,
+                                       self.loadable, "confusion")
+    sup.create_dir_if_not_exists(confusion_path_dir)
+
+    confusion_path = os.path.join(confusion_path_dir,
+                              f"{self.PH2}-"\
+                              f"{self.PH3}-"\
+                              f"{self.reducer}-"\
+                              f"{self.kernel}-"\
+                              f"n{self.n}-"\
+                              f"lr{self.lr}-"\
+                              f"ep{len(self.loss_list)}"\
+                              f"s{self.accuracy}.jpg"
+    )
+
+    self.plot_confusion_matrix()
+    self.confusion_fig.savefig(confusion_path, dpi=300, bbox_inches='tight')
+
   def keep(self):
-    model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, self.class_list, 
+    model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, self.class_list,
+                                       str(len(self.class_numeric_list)),  
                                        sup.TRAIN_BERT_CODE, self.data_unit,
                                        self.loadable)
     sup.create_dir_if_not_exists(model_path_dir)
@@ -318,8 +236,9 @@ class BERT(Arch):
 
     torch.save(self.me.state_dict(), model_path)
     
-    # Also save training loss information
+    # Also save training loss information and confusion matrix
     self.keep_loss()
+    self.keep_confusion_matrix()
      
 
 ############################## BERT architecture ##############################

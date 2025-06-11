@@ -9,7 +9,13 @@ sys.path.append(os.environ["PYTHONPATH"])
 import superheader as sup
 
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import (
+    accuracy_score, top_k_accuracy_score, f1_score, 
+    precision_score, recall_score, confusion_matrix
+)
 
 sup.report_dir_if_not_exists(sup.PH1_DATA_ROOT)
 sup.report_dir_if_not_exists(sup.PH2_DATA_ROOT)
@@ -37,8 +43,11 @@ class Arch():
                                   sup.get_class_list(data_config["class_list"])
                                   )
     self.class_name_list = sup.get_class_name_list(self.class_numeric_list)
+    self.num_classes = len(self.class_numeric_list)
     self.label_map = {label : i for i, label in 
                       enumerate(self.class_numeric_list)}
+    self.mapped_class_numeric_list = [self.label_map[l] 
+                                      for l in self.class_numeric_list]
     self.label_reverse = {i : label for i, label in 
                       enumerate(self.class_numeric_list)}
     self.test_ratio = 0.2
@@ -52,12 +61,28 @@ class Arch():
       self.df = df
 
     # Model
-    self.train_config = train_config
     self.me = None
     self.arch = train_config["arch"]
 
+    # train
+    self.train_config = train_config
+    self.loss_list = list()
+    self.loss_fig = None
+
+    # test
+    self.y_true = None
+    self.y_logits = None
+    self.y_pred = None
+
     # score
     self.accuracy = None
+    self.top2accuracy = None
+    self.macro_f1 = None
+    self.per_class_f1 = None
+    self.macro_precision = None
+    self.macro_recall = None
+    self.confusion = None
+    self.confusion_fig = None
 
   ### Dataset helper functions start here ###
   def set_datapath(self):
@@ -138,9 +163,76 @@ class Arch():
   def fit(self):
     pass
 
-  def score(self):
+  def plot_loss(self):
+    self.loss_fig, ax = plt.subplots(figsize=(20, 16))
+    
+    ax.plot(range(1, len(self.loss_list) + 1), self.loss_list)
+    
+    ax.set_xlabel('Epoch', fontsize=20)
+    ax.set_ylabel('Loss', fontsize=20)
+    ax.tick_params(axis='x', labelsize=18)
+    ax.tick_params(axis='y', labelsize=18)
+    self.loss_fig.suptitle(f'Training Loss over {len(self.loss_list)} Epochs', fontsize=30)
+    ax.set_title(str(self.data_config) + "\n" + str(self.train_config), fontsize=15)
+
+    # Add accuracy box
+    ax.text(0.99, 0.99, f"Accuracy: {self.accuracy:.3f}",
+            transform=ax.transAxes,
+            fontsize=16,
+            ha='right', va='top',
+            bbox=dict(facecolor='white', edgecolor='black', boxstyle='round', alpha=0.8))
+
+    self.loss_fig.tight_layout()
+
+  def show_loss(self):
+    self.plot_loss()
+    self.loss_fig.show()
+
+  def keep_loss(self):
     pass
+
+  def test(self):
+    pass
+
+  def score(self):
+    self.accuracy = accuracy_score(self.y_true, self.y_pred)
+
+  def full_score(self):
+    self.accuracy = accuracy_score(self.y_true, self.y_pred)
+    self.macro_f1 = f1_score(self.y_true, self.y_pred, average='macro')
+    self.macro_precision = precision_score(self.y_true, self.y_pred, average='macro')
+    self.macro_recall = recall_score(self.y_true, self.y_pred, average='macro')
+    self.confusion = confusion_matrix(self.y_true, self.y_pred)
+    if self.num_classes == 2:
+      self.top2accuracy = 1
+    else:
+      self.top2accuracy = top_k_accuracy_score(y_true=self.y_true, 
+                                        y_score=self.y_logits, 
+                                        k=2,
+                                        labels=self.mapped_class_numeric_list)
+
+  def plot_confusion_matrix(self):
+
+    self.confusion_fig, ax = plt.subplots(figsize=(20, 16))
+    
+    sns.heatmap(self.confusion, annot=True, fmt="d", cmap="Blues",
+                xticklabels=self.class_name_list,
+                yticklabels=self.class_name_list)
+    
+    self.confusion_fig.suptitle("Confusion Matrix", fontsize=30)
+    ax.set_title(str(self.data_config) + "\n" + str(self.train_config), fontsize=15)
+    ax.set_xlabel("Predicted Label", fontsize=20)
+    ax.set_ylabel("True Label", fontsize=20)
+    
+    self.confusion_fig.tight_layout()
   
+  def show_confusion_matrix(self):
+    self.plot_confusion_matrix()
+    self.confusion_fig.show()
+
+  def keep_confusion_matrix(self):
+    pass
+
   def keep(self):
     pass
 

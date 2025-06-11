@@ -37,18 +37,36 @@ class KNN(Arch):
 
   def fit(self):
     self.me.fit(self.X_train, self.y_train)
-
-  def predict(self, X):
-    return self.me.predict(X)
   
-  def score(self):
-    y_pred = self.predict(self.X_test)
+  def test(self):
+    self.y_true = self.y_test.values
+    self.y_logits = self.me.kneighbors(self.X_test, 
+                                       n_neighbors=self.num_classes)[0]
+    self.y_pred = self.me.predict(self.X_test)
 
-    self.accuracy = accuracy_score(self.y_test, y_pred)
-    return self.accuracy
+  def keep_confusion_matrix(self):
+    confusion_path_dir = os.path.join(sup.TRAIN_MEDIAGEN_ROOT, self.class_list,
+                                       str(len(self.class_numeric_list)),  
+                                       sup.TRAIN_KNN_CODE, self.data_unit,
+                                       "confusion")
+    sup.create_dir_if_not_exists(confusion_path_dir)
+
+    confusion_path = os.path.join(confusion_path_dir,
+                              f"{self.PH2}-"\
+                              f"{self.PH3}-"\
+                              f"{self.reducer}-"\
+                              f"{self.kernel}-"\
+                              f"n{self.n}-"\
+                              f"k{self.k}-"\
+                              f"s{self.accuracy}.jpg"
+    )
+
+    self.plot_confusion_matrix()
+    self.confusion_fig.savefig(confusion_path, dpi=300, bbox_inches='tight')
   
   def keep(self):
     model_path_dir = os.path.join(sup.TRAIN_BINGEN_ROOT, self.class_list, 
+                                       str(len(self.class_numeric_list)), 
                                        sup.TRAIN_KNN_CODE, self.data_unit)
     sup.create_dir_if_not_exists(model_path_dir)
     model_path = os.path.join(model_path_dir,
@@ -57,11 +75,13 @@ class KNN(Arch):
                               f"{self.reducer}-"\
                               f"{self.kernel}-"\
                               f"n{self.n}-"\
-                              f"k{self.k}.pkl"
+                              f"k{self.k}-"\
+                              f"s{self.accuracy}.pkl"
     )
     with open(model_path, 'wb') as f:
             pickle.dump(self.me, f)
   
+    self.keep_confusion_matrix()
 ####################### K Nearest Neighbors architecture ######################
 ###############################################################################
 
@@ -124,7 +144,6 @@ def try_data_configs(data_unit, label_col, class_list):
         data_config["reducer"] = ''
         data_config["kernel"] = ''
         try_train_configs(data_config)
-
 
 def find_best(data_unit, label_col, class_list):
   try_data_configs(data_unit, label_col, class_list)
