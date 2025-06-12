@@ -17,10 +17,10 @@ warnings.filterwarnings(
 
 big_classes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',  \
                 'll', 'm', 'n', 'ñ', 'o', 'p', 'q', 'r', 'rr', 's', 't', 'u',\
-                'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4', '5', '6', '7',  \
-                '8', '9', '10']
-small_classes = ['0']
-ALL_CLASSES_LIST = big_classes + small_classes
+                'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4', '5', '6', '8', \
+                '9', '10']
+bad_classes = ['0', '7']
+ALL_CLASSES_LIST = big_classes + bad_classes
 CLASSES_TO_NUMBERS = {ALL_CLASSES_LIST[i] : i for i in \
                       range(len(ALL_CLASSES_LIST))}
 NUMBERS_TO_CLASSES = {i : ALL_CLASSES_LIST[i] for i in \
@@ -224,72 +224,9 @@ for i in range(21):
 
 ##/ Rebased pose landmarks
 pf_chest_pose_landmark_columns = []
-for i in [0, 11, 12]:
-  pf_chest_pose_landmark_columns.append('cp'+str(i)+'x')
-  pf_chest_pose_landmark_columns.append('cp'+str(i)+'y')
-  pf_chest_pose_landmark_columns.append('cp'+str(i)+'z')
 pf_chest_pose_landmark_columns.append('cp_h_mean_x')
 pf_chest_pose_landmark_columns.append('cp_h_mean_y')
 pf_chest_pose_landmark_columns.append('cp_h_mean_z')
-
-
-## Applicable only to per video dataset
-pv_hand_landmark_columns = []
-pv_pose_landmark_columns = []
-pv_mean_hand_columns = []
-pv_h_v123_columns = []
-pv_p_v123_columns = []
-pv_wrist_hand_landmark_columns = []
-pv_chest_pose_landmark_columns = []
-
-
-for k in range(NUM_FRAMES_PER_VIDEO):
-  #/ Original landmarks
-  ##/ Original hand landmarks
-  for i in range(21):
-    pv_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'x')
-    pv_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'y')
-    pv_hand_landmark_columns.append('f'+str(k)+'_h'+str(i)+'z')
-
-  ##/ Original pose landmarks
-  for i in [0, 11, 12]:
-    pv_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'x')
-    pv_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'y')
-    pv_pose_landmark_columns.append('f'+str(k)+'_p'+str(i)+'z')
-
-  ##/ Mean position landmarks
-  ##/ Mean hand position landmarks
-  pv_mean_hand_columns.append('f'+str(k)+'_h_mean_x')
-  pv_mean_hand_columns.append('f'+str(k)+'_h_mean_y')
-  pv_mean_hand_columns.append('f'+str(k)+'_h_mean_z')
-
-  #/ v1, v2, v3 vectors
-  for i in [1, 2, 3]:
-    ##/ hand v1, v2, v3 vectors
-    pv_h_v123_columns.append('f'+str(k)+'_h_v'+str(i)+'x')
-    pv_h_v123_columns.append('f'+str(k)+'_h_v'+str(i)+'y')
-    pv_h_v123_columns.append('f'+str(k)+'_h_v'+str(i)+'z')
-
-    ##/ pose v1, v2, v3 vectors
-    pv_p_v123_columns.append('f'+str(k)+'_p_v'+str(i)+'x')
-    pv_p_v123_columns.append('f'+str(k)+'_p_v'+str(i)+'y')
-    pv_p_v123_columns.append('f'+str(k)+'_p_v'+str(i)+'z')
-
-  #/ Rebased landmarks
-  ##/ Rebased hand landmarks
-  for i in range(21):
-    pv_wrist_hand_landmark_columns.append('f'+str(k)+'_wh'+str(i)+'x')
-    pv_wrist_hand_landmark_columns.append('f'+str(k)+'_wh'+str(i)+'y')
-    pv_wrist_hand_landmark_columns.append('f'+str(k)+'_wh'+str(i)+'z')
-
-  ##/ Rebased pose landmarks
-  for i in [0, 11, 12]:
-    pv_chest_pose_landmark_columns.append('f'+str(k)+'_cp'+str(i)+'x')
-    pv_chest_pose_landmark_columns.append('f'+str(k)+'_cp'+str(i)+'y')
-    pv_chest_pose_landmark_columns.append('f'+str(k)+'_cp'+str(i)+'z')
-  pv_chest_pose_landmark_columns.append('f'+str(k)+'_cp_h_mean_x')
-  pv_chest_pose_landmark_columns.append('f'+str(k)+'_cp_h_mean_y')
-  pv_chest_pose_landmark_columns.append('f'+str(k)+'_cp_h_mean_z')
 
 ################################ Column naming ################################
 ###############################################################################

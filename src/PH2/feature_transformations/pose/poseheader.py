@@ -30,14 +30,13 @@ def NormalVector(row):
 def ChangeOfBase(row):
   # Inputs
   p0 = row.filter(regex="p0").to_numpy()
-  pose_landmarks = row.filter(regex="p(0|11|12)([xyz])").to_numpy()
   mean_hand = row.filter(regex="h_mean").to_numpy()
   v1 = row.filter(regex="p_v1").to_numpy()
   v2 = row.filter(regex="p_v2").to_numpy()
   v3 = row.filter(regex="p_v3").to_numpy()
 
   # MAIN ACTION
-  rebased = ph2.ChangeOfBase(p0, np.array([v1, v2, v3]), np.concatenate((pose_landmarks, mean_hand)))
+  rebased = ph2.ChangeOfBase(p0, np.array([v1, v2, v3]), mean_hand)
 
   # Return as pandas series
   return pd.Series(rebased)
