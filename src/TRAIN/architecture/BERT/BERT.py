@@ -24,6 +24,7 @@ device = torch.device("mps" if torch.backends.mps.is_available()
 print(f"device: {device}")
 
 from tqdm import tqdm
+import gc
 
 ### Helper classes ###
 # --- Custom BERT Embeddings ---
@@ -326,6 +327,9 @@ def try_train_configs(data_config,
 
             keep_scores_bert(model)
             update_best(model)
+
+            del model
+            gc.collect()
 
 def try_data_configs(data_unit, label_col, class_list,
                      PH2_CANDIDATES=BERT_PH2_CANDIDATES,

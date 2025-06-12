@@ -15,6 +15,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pickle
+import gc
 
 ###############################################################################
 ####################### K Nearest Neighbors architecture ######################
@@ -110,6 +111,9 @@ def try_train_configs(data_config):
 
     keep_scores_knn(model)
     update_best(model)
+
+    del model
+    gc.collect()
 
 def try_data_configs(data_unit, label_col, class_list):
   data_config = {

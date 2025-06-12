@@ -30,8 +30,8 @@ NUMBERS_TO_CLASSES = {i : ALL_CLASSES_LIST[i] for i in \
 #NUM_CLASSES = "three-classes"
 #NUM_CLASSES = "six-classes"
 #NUM_CLASSES = "ten-classes"
-NUM_CLASSES = "alpha-classes"
-#NUM_CLASSES = "all-classes"
+#NUM_CLASSES = "alpha-classes"
+NUM_CLASSES = "all-classes"
 
 print(f"\n\nChosen class grouping: {NUM_CLASSES}\n\n")
 
