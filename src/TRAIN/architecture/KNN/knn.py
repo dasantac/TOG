@@ -35,7 +35,7 @@ class KNN(Arch):
     self.X_train, self.X_test, self.y_train, self.y_test = \
       train_test_split(X, y, test_size=0.2, random_state=42)
 
-  def fit(self):
+  def fit(self, verbose=False):
     self.me.fit(self.X_train, self.y_train)
   
   def test(self):

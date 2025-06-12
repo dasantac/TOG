@@ -160,7 +160,7 @@ class Arch():
     self.df[data_cols] = self.scaler.fit_transform(self.df[data_cols])
   ### Dataset helper functions end here###
 
-  def fit(self):
+  def fit(self, verbose=False):
     pass
 
   def plot_loss(self):
