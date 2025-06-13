@@ -67,7 +67,7 @@ class CustomBertEmbeddings(nn.Module):
     embeddings = self.LayerNorm(embeddings)
     return self.dropout(embeddings)
     
-# --- Model ---
+# --- Custom BERT Model ---
 
 class BertWithCustomInput(nn.Module):
   def __init__(self, loadable, input_dim, output_dim):
@@ -279,9 +279,9 @@ def keep_scores_bert(model:BERT):
 
 # Training parameters
 BERT_PH2_CANDIDATES = [True, False]
-BERT_PH3_CANDIDATES = [True, False]
-BERT_N_CANDIDATES = [3, 7, 11, 15]
-BERT_REDUCER_CANDIDATES = [sup.PH3_REDUCER_NAME_UMAP]
+BERT_PH3_CANDIDATES = [False]
+BERT_N_CANDIDATES = []
+BERT_REDUCER_CANDIDATES = []
 BERT_REDUCER_KERNEL_CANDIDATES = []
 BERT_lr_CANDIDATES = [1e-5]
 BERT_optimizer_CANDIDATES = [optim.AdamW]
@@ -309,6 +309,7 @@ def try_train_configs(data_config,
               "loadable" : load_name,
               "optimizer" : optimizer,
               "lr" : lr,
+              "weight_decay" : 0,
               "loss_fn" : loss_fn,
               "num_epochs" : num_epochs
             }
@@ -322,7 +323,9 @@ def try_train_configs(data_config,
               model = BERT(data_config=data_config, df=save_df, 
                            train_config=train_config)
               
-            model.fit()
+            model.fit(verbose=True)
+
+            model.test()
             model.score()
 
             keep_scores_bert(model)
@@ -389,7 +392,7 @@ def try_data_configs(data_unit, label_col, class_list,
       else:
         data_config["n"] = -1
         if PH2:
-          data_config["input_dim"] = 87
+          data_config["input_dim"] = 75
         else:
           data_config["input_dim"] = 72
         data_config["reducer"] = ''

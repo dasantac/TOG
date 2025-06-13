@@ -9,6 +9,7 @@ sys.path.append(os.environ["PYTHONPATH"])
 import superheader as sup
 
 import pandas as pd
+from datetime import datetime
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
@@ -246,9 +247,16 @@ def print_best(arch, data_unit):
 
 def update_best(model:Arch):
   if model.accuracy > sup.best_scores[model.arch][model.data_unit]["accuracy"]:
-      print(f"updating best... {model.accuracy}")
+      now = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+      print(f"updating best... {model.accuracy} at {now}")
       print(f"\t{model.data_config}")
       print(f"\t{model.train_config}")
+
+      if model.arch == sup.TRAIN_BERT_CODE:
+        model.plot_loss()
+
+      model.full_score()
+      model.plot_confusion_matrix()
 
       model.keep()
 
@@ -257,6 +265,11 @@ def update_best(model:Arch):
           "data_config": model.data_config.copy(),
           "train_config": model.train_config.copy()
       })
+
+      if model.arch == sup.TRAIN_BERT_CODE:
+        plt.close(model.loss_fig)
+      
+      plt.close(model.confusion_fig)
 ############################# Generic Architecture ############################
 ###############################################################################
 ############################ Specific Architectures ###########################
