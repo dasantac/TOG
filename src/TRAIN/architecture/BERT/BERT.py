@@ -99,7 +99,9 @@ class BERT(Arch):
   def __init__(self, data_config, df, train_config):
     # Dataset and scoring
     super().__init__(data_config, df, train_config)
-    self.seq_len = data_config["seq_len"]
+    self.seq_len = sup.NUM_FRAMES_PER_VIDEO \
+                    if self.data_unit == sup.DATA_S_PV \
+                    else 1
     self.input_dim = data_config["n"]
     self.output_dim = len(self.class_numeric_list)
     self.batch_size = data_config["batch_size"]
@@ -345,7 +347,7 @@ def train_one_model(args):
   model = BERT(data_config=data_config, df=save_df, train_config=train_config)
   model.fit(verbose=True)
   model.test()
-  model.score()
+  model.full_score()
   print(model.accuracy)
   keep_scores_bert(model)
   update_best(model)
@@ -400,16 +402,15 @@ def try_data_configs(data_unit, label_col, class_list, batch_size,
                      num_epochs_CANDIDATES=BERT_num_epochs_CANDIDATES):
 
   data_config = {
+    "data_unit": data_unit,
     "PH2": None,
     "PH3": None,
     "reducer": '',
     "kernel": '',
     "n": -1,
-    "data_unit": data_unit,
     "label_col": label_col,
     "class_list": class_list,
     "batch_size": batch_size,
-    "seq_len": sup.NUM_FRAMES_PER_VIDEO if data_unit == sup.DATA_S_PV else 1
   }
 
   configs = []
