@@ -7,9 +7,7 @@ sys.path.append(os.environ["PYTHONPATH"])
 
 # Load project-wide variables
 import superheader as sup
-from ..archeader import Arch
-from ..archeader import print_best
-from ..archeader import update_best
+from ..archeader import Arch, update_best, print_best
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
@@ -94,6 +92,19 @@ def keep_scores_knn(model:KNN):
                                model.data_unit, model.PH2,
                                model.PH3, reducer, kernel, model.n, model.k])
 
+# Cleanup
+def clean_knn(model, exclude=()):
+  for attr in dir(model):
+    if attr.startswith("__") or attr in exclude:
+      continue
+    try:
+      delattr(model, attr)
+    except Exception:
+      pass
+
+  del model
+  gc.collect()
+
 # Training functions
 TRAIN_KNN_K_CANDIDATES = [k for k in range(1,8)]
 
@@ -102,9 +113,10 @@ def try_train_configs(data_config):
     train_config = {"arch" : sup.TRAIN_KNN_CODE, "k" : k}
     if k == 1:
       model = KNN(data_config=data_config, df=None, train_config=train_config)
-      save_df = model.df
+      savedf = model.df
+      model1 = model
     else:
-      model = KNN(data_config=data_config, df=save_df, train_config=train_config)
+      model = KNN(data_config=data_config, df=savedf, train_config=train_config)
 
     model.fit()
 
@@ -115,8 +127,11 @@ def try_train_configs(data_config):
     keep_scores_knn(model)
     update_best(model)
 
-    del model
-    gc.collect()
+    if k != 1:
+      clean_knn(model)
+  
+  clean_knn(model1)
+  gc.collect()
 
 def try_data_configs(data_unit, label_col, class_list):
   data_config = {
@@ -147,12 +162,18 @@ def try_data_configs(data_unit, label_col, class_list):
               data_config["kernel"] = ''
               try_train_configs(data_config)
       else:
-        data_config["n"] = -1
+        if PH2:
+          data_config["n"] = 75
+        else:
+          data_config["n"] = 72
         data_config["reducer"] = ''
         data_config["kernel"] = ''
         try_train_configs(data_config)
+  
+  gc.collect()
 
 def find_best(data_unit, label_col, class_list):
   try_data_configs(data_unit, label_col, class_list)
   
   print_best(sup.TRAIN_KNN_CODE, data_unit)
+  gc.collect()

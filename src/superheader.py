@@ -33,7 +33,7 @@ NUMBERS_TO_CLASSES = {i : ALL_CLASSES_LIST[i] for i in \
 #NUM_CLASSES = "alpha-classes"
 NUM_CLASSES = "all-classes"
 
-print(f"\n\nChosen class grouping: {NUM_CLASSES}\n\n")
+#print(f"\n\nChosen class grouping: {NUM_CLASSES}\n\n")
 
 def get_class_list(list_name):
   if list_name == "all-classes":
@@ -86,15 +86,17 @@ def report_dir_if_not_exists(path):
   if os.path.exists(path)==False:
     raise Exception(f"Directory {path} does not exist. Please investigate") 
   else:
-    print(f"Directory {path} exists. Continuing with execution")
+    #print(f"Directory {path} exists. Continuing with execution")
+    pass
 
 def create_dir_if_not_exists(path):
   if os.path.exists(path)==False:
-    print(f"Directory {path} does not exist. Creating it and continuing with "\
-           "execution")
+    #print(f"Directory {path} does not exist. Creating it and continuing with "\
+    #       "execution")
     os.makedirs(path)
   else:
-    print(f"Directory {path} exists. Continuing with execution")
+    #print(f"Directory {path} exists. Continuing with execution")
+    pass
 
 # Top directory for the project
 ROOT = os.environ["TOG_ROOT"]
@@ -239,8 +241,8 @@ knn_score_tracker = []
 
 ## BERT
 bert_scores_columns = ["class_list", "accuracy", "data_unit", "PH2", "PH3", 
-                      "reducer", "kernel", "n", "loadable", "lr", "optimizer",
-                      "loss_fn", "num_epochs"]
+                      "reducer", "kernel", "n", "batch_size", "loadable", 
+                      "num_epochs"]
 bert_score_tracker = []
 
 best_scores = {

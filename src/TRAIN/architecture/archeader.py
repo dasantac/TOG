@@ -17,6 +17,8 @@ from sklearn.metrics import (
     accuracy_score, top_k_accuracy_score, f1_score, 
     precision_score, recall_score, confusion_matrix
 )
+import torch
+import gc
 
 sup.report_dir_if_not_exists(sup.PH1_DATA_ROOT)
 sup.report_dir_if_not_exists(sup.PH2_DATA_ROOT)
@@ -246,39 +248,30 @@ def print_best(arch, data_unit):
   print(f"Best train config: {best['train_config']}")
 
 def update_best(model:Arch):
+  now = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
   if model.accuracy > sup.best_scores[model.arch][model.data_unit]["accuracy"]:
-      now = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-      print(f"updating best... {model.accuracy} at {now}")
-      print(f"\t{model.data_config}")
-      print(f"\t{model.train_config}")
+    print(f"updating best... at {now}")
 
-      if model.arch == sup.TRAIN_BERT_CODE:
-        model.plot_loss()
+    if model.arch == sup.TRAIN_BERT_CODE:
+      model.plot_loss()
 
-      model.full_score()
-      model.plot_confusion_matrix()
+    model.full_score()
+    model.plot_confusion_matrix()
 
-      model.keep()
+    model.keep()
 
-      sup.best_scores[model.arch][model.data_unit].update({
-          "accuracy": model.accuracy,
-          "data_config": model.data_config.copy(),
-          "train_config": model.train_config.copy()
-      })
+    sup.best_scores[model.arch][model.data_unit].update({
+      "accuracy": model.accuracy,
+      "data_config": model.data_config.copy(),
+      "train_config": model.train_config.copy()
+    })
 
-      if model.arch == sup.TRAIN_BERT_CODE:
-        plt.close(model.loss_fig)
-      
-      plt.close(model.confusion_fig)
+    plt.close('all')
+  else:
+    print(f"not best... at {now}")
+   
+  print("\n\n")
 ############################# Generic Architecture ############################
 ###############################################################################
-############################ Specific Architectures ###########################
 
-from .KNN import knn
-from .KNN.knn import KNN
-from .BERT.bert import BERT
-from .BERT import bert
-
-############################ Specific Architectures ###########################
-###############################################################################
 

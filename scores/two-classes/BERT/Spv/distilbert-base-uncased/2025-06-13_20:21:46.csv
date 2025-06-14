@@ -1,0 +1,3 @@
+class_list,accuracy,data_unit,PH2,PH3,reducer,kernel,n,batch_size,loadable,num_epochs
+two-classes,0.6511627906976745,Spv,True,False,None,None,75,16,distilbert-base-uncased,2
+two-classes,0.5116279069767442,Spv,False,False,None,None,72,16,distilbert-base-uncased,2
