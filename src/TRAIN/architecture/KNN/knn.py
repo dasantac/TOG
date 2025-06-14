@@ -118,11 +118,15 @@ def try_train_configs(data_config):
     else:
       model = KNN(data_config=data_config, df=savedf, train_config=train_config)
 
+    print(data_config)
+    print(train_config)
+
     model.fit()
 
     model.test()
 
     model.score()
+    print(model.accuracy)
 
     keep_scores_knn(model)
     update_best(model)
