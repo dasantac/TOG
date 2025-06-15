@@ -31,30 +31,35 @@ class Arch():
   def __init__(self, data_config, df, train_config):
     # Dataset
     self.data_config = data_config
-    self.PH2 = data_config["PH2"]
-    self.PH3 = data_config["PH3"]
-    self.reducer = data_config["reducer"]
-    self.kernel = data_config["kernel"]
-    self.n = data_config["n"]
     self.data_unit = data_config["data_unit"]
     self.label_col = data_config["label_col"]
     self.class_list = data_config["class_list"]
     if self.class_list == 'specified':
+      self.difficulty = data_config["difficulty"]
       self.class_numeric_list = data_config["class_numeric_list"]
+      self.num_classes = data_config["num_classes"]
     else:
+      self.difficulty = "unspecified"
       self.class_numeric_list = sup.get_class_numeric_list(
                                   sup.get_class_list(data_config["class_list"])
                                   )
+      self.num_classes = len(self.class_numeric_list)
+
     self.class_name_list = sup.get_class_name_list(self.class_numeric_list)
-    self.num_classes = len(self.class_numeric_list)
     self.label_map = {label : i for i, label in 
                       enumerate(self.class_numeric_list)}
     self.mapped_class_numeric_list = [self.label_map[l] 
                                       for l in self.class_numeric_list]
     self.label_reverse = {i : label for i, label in 
                       enumerate(self.class_numeric_list)}
-    self.test_ratio = 0.2
 
+    self.PH2 = data_config["PH2"]
+    self.PH3 = data_config["PH3"]
+    self.reducer = data_config["reducer"]
+    self.kernel = data_config["kernel"]
+    self.n = data_config["n"]
+
+    self.test_ratio = 0.2
     if df is None:
       self.set_datapath()
       self.set_dataframe()
@@ -238,6 +243,55 @@ class Arch():
 
   def keep(self):
     pass
+
+# Cleanup
+def clean_model(model):
+  # --- Explicitly clear GPU ---
+  if hasattr(model, 'me') and model.me is not None:
+    try:
+      model.me.cpu()
+    except Exception:
+      pass
+    del model.me
+
+  # --- Clear dataloaders and datasets ---
+  for attr in ['X_train', 'X_test', 'y_train', 'y_test',
+               'train_loader', 'test_loader']:
+    if hasattr(model, attr):
+      delattr(model, attr)
+
+  # --- Clear test results ---
+  for attr in ['y_true', 'y_pred', 'y_logits']:
+    if hasattr(model, attr):
+      delattr(model, attr)
+
+  # --- Clear figures ---
+  for attr in ['loss_fig', 'confusion_fig']:
+    fig = getattr(model, attr, None)
+    if fig is not None:
+      try:
+        import matplotlib.pyplot as plt
+        plt.close(fig)
+      except Exception:
+        pass
+    if hasattr(model, attr):
+      delattr(model, attr)
+
+  # --- Clear dataset ---
+  if hasattr(model, 'df'):
+    del model.df
+
+  # --- Optional: clear confusion matrix (can be large if many classes) ---
+  if hasattr(model, 'confusion'):
+    del model.confusion
+
+  # --- Full model delete ---
+  del model
+
+  # --- Cleanup ---
+  gc.collect()
+  if torch.backends.mps.is_available():
+    torch.mps.empty_cache()
 
 # Score tracking
 def print_best(arch, data_unit):

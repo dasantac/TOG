@@ -7,7 +7,7 @@ sys.path.append(os.environ["PYTHONPATH"])
 
 # Load project-wide variables
 import superheader as sup
-from TRAIN.architecture.archeader import Arch, update_best, print_best
+from TRAIN.architecture.archeader import Arch, update_best, print_best, clean_model
 
 import torch
 import torch.nn as nn
@@ -102,8 +102,8 @@ class BERT(Arch):
     self.seq_len = sup.NUM_FRAMES_PER_VIDEO \
                     if self.data_unit == sup.DATA_S_PV \
                     else 1
-    self.input_dim = data_config["n"]
-    self.output_dim = len(self.class_numeric_list)
+    self.input_dim = self.n
+    self.output_dim = self.num_classes
     self.batch_size = data_config["batch_size"]
     self.set_dataloaders()
 
@@ -258,14 +258,39 @@ def download_if_not_exists(model_name):
     #print(f"Directory {model_dir} exists. Continuing with execution")
     pass
 
-DISTILBERT= "distilbert-base-uncased"
-BERT_TINY="prajjwal1/bert-tiny"
+BERT_TINY="gaunernst/bert-tiny-uncased"
+BERT_MINI="gaunernst/bert-mini-uncased"
+BERT_SMALL="gaunernst/bert-small-uncased"
+BERT_MEDIUM="gaunernst/bert-medium-uncased"
+DISTILBERT="distilbert-base-uncased"
 BERT_BASE="bert-base-uncased"
 BERT_LARGE="bert-large-uncased"
-BERT_LOADABLE_CANDIDATES = [BERT_TINY]
+BERT_LOADABLE_CANDIDATES = [BERT_TINY,
+                            BERT_MINI,
+                            BERT_SMALL,
+                            BERT_MEDIUM,
+                            DISTILBERT]
+BERT_arch_multipliers = {
+  BERT_TINY : 90,
+  BERT_MINI : 36,
+  BERT_SMALL : 12,
+  BERT_MEDIUM : 9,
+  DISTILBERT : 6,
+  BERT_BASE : 3,
+  BERT_LARGE : 1
+}
 
-download_if_not_exists(DISTILBERT)
+BERT_data_unit_multiplier = {
+  sup.DATA_S_PF : 1,
+  sup.DATA_S_PV : 4
+}
+
+
 download_if_not_exists(BERT_TINY)
+download_if_not_exists(BERT_MINI)
+download_if_not_exists(BERT_SMALL)
+download_if_not_exists(BERT_MEDIUM)
+download_if_not_exists(DISTILBERT)
 download_if_not_exists(BERT_BASE)
 download_if_not_exists(BERT_LARGE)
 
@@ -273,71 +298,25 @@ download_if_not_exists(BERT_LARGE)
 def keep_scores_bert(model:BERT):
   reducer = model.reducer if model.reducer else 'None'
   kernel = model.kernel if model.kernel else 'None'
-  sup.bert_score_tracker.append([model.class_list, model.accuracy,
-                               model.data_unit, model.PH2,
-                               model.PH3, reducer, kernel, model.n, 
-                               model.batch_size, model.loadable,
-                               model.num_epochs])
-
-# Cleanup
-def clean_bert(model):
-  # --- Explicitly clear GPU ---
-  if hasattr(model, 'me') and model.me is not None:
-    try:
-      model.me.cpu()
-    except Exception:
-      pass
-    del model.me
-
-  # --- Clear dataloaders and datasets ---
-  for attr in ['X_train', 'X_test', 'y_train', 'y_test',
-               'train_loader', 'test_loader']:
-    if hasattr(model, attr):
-      delattr(model, attr)
-
-  # --- Clear test results ---
-  for attr in ['y_true', 'y_pred', 'y_logits']:
-    if hasattr(model, attr):
-      delattr(model, attr)
-
-  # --- Clear figures ---
-  for attr in ['loss_fig', 'confusion_fig']:
-    fig = getattr(model, attr, None)
-    if fig is not None:
-      try:
-        import matplotlib.pyplot as plt
-        plt.close(fig)
-      except Exception:
-        pass
-    if hasattr(model, attr):
-      delattr(model, attr)
-
-  # --- Clear dataset ---
-  if hasattr(model, 'df'):
-    del model.df
-
-  # --- Optional: clear confusion matrix (can be large if many classes) ---
-  if hasattr(model, 'confusion'):
-    del model.confusion
-
-  # --- Full model delete ---
-  del model
-
-  # --- Cleanup ---
-  gc.collect()
-  if torch.backends.mps.is_available():
-    torch.mps.empty_cache()
+  sup.bert_score_tracker.append([
+    model.data_unit, model.class_list, model.difficulty, model.num_classes,
+    model.class_name_list,
+    model.PH2, model.PH3, reducer, kernel, model.n,
+    model.batch_size, model.num_epochs, model.loadable,
+    model.accuracy, model.top2accuracy, model.macro_f1, model.macro_precision,
+    model.macro_recall
+    ])
 
 # Training parameters
 BERT_PH2_CANDIDATES = [True, False]
 BERT_PH3_CANDIDATES = [True, False]
-BERT_N_CANDIDATES = list(range(1,16,2))
-BERT_REDUCER_CANDIDATES = [sup.PH3_REDUCER_NAME_PCA, sup.PH3_REDUCER_NAME_UMAP]
-BERT_REDUCER_KERNEL_CANDIDATES = []
+BERT_N_CANDIDATES = sup.PH3_N_CANDIDATES
+BERT_REDUCER_CANDIDATES = sup.PH3_REDUCER_NAMES
+BERT_REDUCER_KERNEL_CANDIDATES = sup.PH3_REDUCER_KERNEL_NAMES
 BERT_lr_CANDIDATES = [1e-5]
 BERT_optimizer_CANDIDATES = [optim.AdamW]
 BERT_loss_fn_CANDIDATES = [nn.CrossEntropyLoss]
-BERT_num_epochs_CANDIDATES = [1000]
+BERT_base_num_epochs = 15
 
 # Training functions
 def train_one_model(args):
@@ -351,24 +330,24 @@ def train_one_model(args):
   print(model.accuracy)
   keep_scores_bert(model)
   update_best(model)
-  clean_bert(model)
+  clean_model(model)
 
 def try_train_configs(data_config,
+                      base_num_epochs=BERT_base_num_epochs,
                       LOADABLE_CANDIDATES=BERT_LOADABLE_CANDIDATES,
                       lr_CANDIDATES=BERT_lr_CANDIDATES,
                       optimizer_CANDIDATES=BERT_optimizer_CANDIDATES,
                       loss_fn_CANDIDATES=BERT_loss_fn_CANDIDATES,
-                      num_epochs_CANDIDATES=BERT_num_epochs_CANDIDATES):
+                      ):
 
 
   arch = Arch(data_config=data_config, df=None, 
               train_config={"arch" : "generic"})
   save_df = arch.df
 
-  for loadable, lr, optimizer, loss_fn, num_epochs in product(
+  for loadable, lr, optimizer, loss_fn in product(
     LOADABLE_CANDIDATES, lr_CANDIDATES,
     optimizer_CANDIDATES, loss_fn_CANDIDATES,
-    num_epochs_CANDIDATES
   ):
     train_config = {
       "arch": sup.TRAIN_BERT_CODE,
@@ -378,18 +357,22 @@ def try_train_configs(data_config,
       "lr": lr,
       "weight_decay": 0,
       "loss_fn": loss_fn,
-      "num_epochs": num_epochs
+      "num_epochs": base_num_epochs 
+                    * BERT_arch_multipliers[loadable]
+                    * BERT_data_unit_multiplier[data_config["data_unit"]]
     }
     train_one_model((data_config, train_config, save_df))
   
   del save_df
-  clean_bert(arch)
+  clean_model(arch)
 
   gc.collect()
   if torch.backends.mps.is_available():
     torch.mps.empty_cache()
 
-def try_data_configs(data_unit, label_col, class_list, batch_size,
+def try_data_configs(data_unit, label_col, class_list, class_numeric_list, 
+                     num_classes, difficulty, batch_size,
+                     base_num_epochs=BERT_base_num_epochs,
                      PH2_CANDIDATES=BERT_PH2_CANDIDATES,
                      PH3_CANDIDATES=BERT_PH3_CANDIDATES,
                      N_CANDIDATES=BERT_N_CANDIDATES,
@@ -398,19 +381,21 @@ def try_data_configs(data_unit, label_col, class_list, batch_size,
                      LOADABLE_CANDIDATES=BERT_LOADABLE_CANDIDATES,
                      lr_CANDIDATES=BERT_lr_CANDIDATES,
                      optimizer_CANDIDATES=BERT_optimizer_CANDIDATES,
-                     loss_fn_CANDIDATES=BERT_loss_fn_CANDIDATES,
-                     num_epochs_CANDIDATES=BERT_num_epochs_CANDIDATES):
+                     loss_fn_CANDIDATES=BERT_loss_fn_CANDIDATES):
 
   data_config = {
     "data_unit": data_unit,
+    "label_col": label_col,
+    "class_list": class_list,
+    "num_classes": num_classes,
+    "difficulty": difficulty,
+    "class_numeric_list": class_numeric_list,
+    "batch_size": batch_size,
     "PH2": None,
     "PH3": None,
     "reducer": '',
     "kernel": '',
-    "n": -1,
-    "label_col": label_col,
-    "class_list": class_list,
-    "batch_size": batch_size,
+    "n": -1
   }
 
   configs = []
@@ -438,18 +423,20 @@ def try_data_configs(data_unit, label_col, class_list, batch_size,
   for config in configs:
     try_train_configs(
       data_config=config,
+      base_num_epochs=base_num_epochs,
       LOADABLE_CANDIDATES=LOADABLE_CANDIDATES,
       lr_CANDIDATES=lr_CANDIDATES,
       optimizer_CANDIDATES=optimizer_CANDIDATES,
       loss_fn_CANDIDATES=loss_fn_CANDIDATES,
-      num_epochs_CANDIDATES=num_epochs_CANDIDATES
     )
 
   gc.collect()
   if torch.backends.mps.is_available():
     torch.mps.empty_cache()
 
-def find_best(data_unit, label_col, class_list, batch_size,
+def find_best(data_unit, label_col, class_list, class_numeric_list, 
+              num_classes, difficulty, batch_size, 
+              base_num_epochs=BERT_base_num_epochs,
               PH2_CANDIDATES=BERT_PH2_CANDIDATES,
               PH3_CANDIDATES=BERT_PH3_CANDIDATES,
               N_CANDIDATES=BERT_N_CANDIDATES,
@@ -458,16 +445,15 @@ def find_best(data_unit, label_col, class_list, batch_size,
               LOADABLE_CANDIDATES=BERT_LOADABLE_CANDIDATES,
               lr_CANDIDATES=BERT_lr_CANDIDATES,
               optimizer_CANDIDATES=BERT_optimizer_CANDIDATES,
-              loss_fn_CANDIDATES=BERT_loss_fn_CANDIDATES,
-              num_epochs_CANDIDATES=BERT_num_epochs_CANDIDATES):
+              loss_fn_CANDIDATES=BERT_loss_fn_CANDIDATES):
 
   try_data_configs(
-    data_unit, label_col, class_list, batch_size,
+    data_unit, label_col, class_list, class_numeric_list, 
+    num_classes, difficulty, batch_size, base_num_epochs,
     PH2_CANDIDATES, PH3_CANDIDATES, N_CANDIDATES,
     REDUCER_CANDIDATES, KERNEL_CANDIDATES,
     LOADABLE_CANDIDATES, lr_CANDIDATES,
-    optimizer_CANDIDATES, loss_fn_CANDIDATES,
-    num_epochs_CANDIDATES
+    optimizer_CANDIDATES, loss_fn_CANDIDATES
   )
 
   print_best(sup.TRAIN_BERT_CODE, data_unit)

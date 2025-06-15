@@ -7,7 +7,7 @@ sys.path.append(os.environ["PYTHONPATH"])
 
 # Load project-wide variables
 import superheader as sup
-from ..archeader import Arch, update_best, print_best
+from ..archeader import Arch, update_best, print_best, clean_model
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
@@ -88,9 +88,14 @@ class KNN(Arch):
 def keep_scores_knn(model:KNN):
   reducer = model.reducer if model.reducer else 'None'
   kernel = model.kernel if model.kernel else 'None'
-  sup.knn_score_tracker.append([model.class_list, model.accuracy,
-                               model.data_unit, model.PH2,
-                               model.PH3, reducer, kernel, model.n, model.k])
+  sup.bert_score_tracker.append([
+    model.data_unit, model.class_list, model.difficulty, model.num_classes,
+    model.class_name_list,
+    model.PH2, model.PH3, reducer, kernel, model.n,
+    model.k,
+    model.accuracy, model.top2accuracy, model.macro_f1, model.macro_precision,
+    model.macro_recall
+    ])
 
 # Cleanup
 def clean_knn(model, exclude=()):
@@ -106,78 +111,84 @@ def clean_knn(model, exclude=()):
   gc.collect()
 
 # Training functions
-TRAIN_KNN_K_CANDIDATES = [k for k in range(1,8)]
+TRAIN_KNN_K_CANDIDATES = [k for k in range(1,2)]
 
 def try_train_configs(data_config):
+  arch = Arch(data_config=data_config, df=None, 
+              train_config={"arch" : "generic"})
+  save_df = arch.df
+
   for k in TRAIN_KNN_K_CANDIDATES:
     train_config = {"arch" : sup.TRAIN_KNN_CODE, "k" : k}
-    if k == 1:
-      model = KNN(data_config=data_config, df=None, train_config=train_config)
-      savedf = model.df
-      model1 = model
-    else:
-      model = KNN(data_config=data_config, df=savedf, train_config=train_config)
 
     print(data_config)
     print(train_config)
 
+    model = KNN(data_config=data_config, df=save_df, train_config=train_config)
     model.fit()
-
     model.test()
-
-    model.score()
+    model.full_score()
     print(model.accuracy)
 
     keep_scores_knn(model)
     update_best(model)
 
-    if k != 1:
-      clean_knn(model)
+    clean_model(model)
   
-  clean_knn(model1)
+  del save_df
+  clean_model(model)
   gc.collect()
 
-def try_data_configs(data_unit, label_col, class_list):
+def try_data_configs(data_unit, label_col, class_list, class_numeric_list, 
+                      num_classes, difficulty):
   data_config = {
-    "PH2" : None,
-    "PH3" : None,
-    "reducer": '',
-    "kernel": '',
-    "n": -1,
     "data_unit": data_unit,
     "label_col": label_col,
-    "class_list": class_list
-    }
+    "class_list": class_list,
+    "num_classes": num_classes,
+    "difficulty": difficulty,
+    "class_numeric_list": class_numeric_list,
+    "PH2": None,
+    "PH3": None,
+    "reducer": '',
+    "kernel": '',
+    "n": -1
+  }
   
+  configs = []
+
   for PH2 in [True, False]:
-    data_config["PH2"] = PH2
     for PH3 in [True, False]:
-      data_config["PH3"] = PH3
       if PH3:
         for n in sup.PH3_N_CANDIDATES:
-          data_config["n"] = n
           for reducer in sup.PH3_REDUCER_NAMES:
-            data_config["reducer"] = reducer
             if reducer == sup.PH3_REDUCER_NAME_KPCA:
               for kernel in sup.PH3_REDUCER_KERNEL_NAMES:
-                data_config["kernel"] = kernel
-                try_train_configs(data_config)
+                configs.append({**data_config, "PH2": PH2, "PH3": PH3, "n": n, "reducer": reducer, "kernel": kernel})
             else:
-              data_config["kernel"] = ''
-              try_train_configs(data_config)
+              configs.append({**data_config, "PH2": PH2, "PH3": PH3, "n": n, "reducer": reducer, "kernel": ''})
       else:
-        if PH2:
-          data_config["n"] = 75
-        else:
-          data_config["n"] = 72
-        data_config["reducer"] = ''
-        data_config["kernel"] = ''
-        try_train_configs(data_config)
-  
+        configs.append({
+          **data_config,
+          "PH2": PH2,
+          "PH3": PH3,
+          "n": 75 if PH2 else 72,
+          "reducer": '',
+          "kernel": ''
+        })
+
+  for config in configs:
+    try_train_configs(
+      data_config=config
+    )
+
   gc.collect()
 
-def find_best(data_unit, label_col, class_list):
-  try_data_configs(data_unit, label_col, class_list)
+def find_best(data_unit, label_col, class_list, class_numeric_list, 
+              num_classes, difficulty):
+  
+  try_data_configs(data_unit, label_col, class_list, class_numeric_list, 
+              num_classes, difficulty)
   
   print_best(sup.TRAIN_KNN_CODE, data_unit)
   gc.collect()
