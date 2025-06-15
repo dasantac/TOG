@@ -1,9 +1,0 @@
-class_list,accuracy,data_unit,PH2,PH3,reducer,kernel,n,batch_size,loadable,num_epochs
-ten-classes,0.7360285374554102,Spf,False,False,None,None,72,1024,prajjwal1/bert-tiny,185
-ten-classes,0.8783194609591756,Spf,False,False,None,None,72,1024,distilbert-base-uncased,37
-ten-classes,0.43162901307966706,Spf,True,False,None,None,75,1024,prajjwal1/bert-tiny,185
-ten-classes,0.5307173999207293,Spf,True,False,None,None,75,1024,distilbert-base-uncased,37
-ten-classes,0.7962085308056872,Spv,False,False,None,None,72,1024,prajjwal1/bert-tiny,740
-ten-classes,0.8957345971563981,Spv,False,False,None,None,72,1024,distilbert-base-uncased,148
-ten-classes,0.41706161137440756,Spv,True,False,None,None,75,1024,prajjwal1/bert-tiny,740
-ten-classes,0.5734597156398105,Spv,True,False,None,None,75,1024,distilbert-base-uncased,148

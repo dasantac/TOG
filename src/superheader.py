@@ -235,14 +235,22 @@ pf_chest_pose_landmark_columns.append('cp_h_mean_z')
 ################################ Score tracking ###############################
 
 ## KNN
-knn_scores_columns = ["class_list", "accuracy", "data_unit", "PH2", "PH3", 
-                      "reducer", "kernel", "n", "k"]
+knn_scores_columns = ["data_unit", "class_list", "difficulty", "num_classes", 
+                      "class_name_list",
+                      "Ph2", "PH3", "reducer", "kernel", "num_components", 
+                      "k",
+                      "accuracy", "top2accuracy", "macro_f1", 
+                      "macro_precision", "macro_recall"]
+
 knn_score_tracker = []
 
 ## BERT
-bert_scores_columns = ["class_list", "accuracy", "data_unit", "PH2", "PH3", 
-                      "reducer", "kernel", "n", "batch_size", "loadable", 
-                      "num_epochs"]
+bert_scores_columns = ["data_unit", "class_list", "difficulty", "num_classes", 
+                      "class_name_list",
+                      "Ph2", "PH3", "reducer", "kernel", "num_components", 
+                      "batch_size", "num_epochs", "loadable",
+                      "accuracy", "top2accuracy", "macro_f1", 
+                      "macro_precision", "macro_recall"]
 bert_score_tracker = []
 
 best_scores = {
@@ -264,11 +272,6 @@ best_scores = {
                     }
   },
   TRAIN_BERT_CODE: {
-                    DATA_AH_PF: {
-                        "accuracy": -1,
-                        "data_config": -1,
-                        "train_config": -1
-                    },
                     DATA_S_PF: {
                         "accuracy": -1,
                         "data_config": -1,
