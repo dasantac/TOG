@@ -311,8 +311,8 @@ def keep_scores_bert(model:BERT):
 BERT_PH2_CANDIDATES = [True, False]
 BERT_PH3_CANDIDATES = [True, False]
 BERT_N_CANDIDATES = sup.PH3_N_CANDIDATES
-BERT_REDUCER_CANDIDATES = sup.PH3_REDUCER_NAMES
-BERT_REDUCER_KERNEL_CANDIDATES = sup.PH3_REDUCER_KERNEL_NAMES
+BERT_REDUCER_CANDIDATES = [sup.PH3_REDUCER_NAME_PCA]
+BERT_REDUCER_KERNEL_CANDIDATES = []
 BERT_lr_CANDIDATES = [1e-5]
 BERT_optimizer_CANDIDATES = [optim.AdamW]
 BERT_loss_fn_CANDIDATES = [nn.CrossEntropyLoss]
@@ -434,8 +434,8 @@ def try_data_configs(data_unit, label_col, class_list, class_numeric_list,
   if torch.backends.mps.is_available():
     torch.mps.empty_cache()
 
-def find_best(data_unit, label_col, class_list, class_numeric_list, 
-              num_classes, difficulty, batch_size, 
+def find_best(data_unit, label_col, class_list, batch_size, 
+              class_numeric_list=None, num_classes=None, difficulty=None, 
               base_num_epochs=BERT_base_num_epochs,
               PH2_CANDIDATES=BERT_PH2_CANDIDATES,
               PH3_CANDIDATES=BERT_PH3_CANDIDATES,
