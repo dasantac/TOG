@@ -88,7 +88,7 @@ class KNN(Arch):
 def keep_scores_knn(model:KNN):
   reducer = model.reducer if model.reducer else 'None'
   kernel = model.kernel if model.kernel else 'None'
-  sup.bert_score_tracker.append([
+  sup.knn_score_tracker.append([
     model.data_unit, model.class_list, model.difficulty, model.num_classes,
     model.class_name_list,
     model.PH2, model.PH3, reducer, kernel, model.n,
@@ -111,7 +111,7 @@ def clean_knn(model, exclude=()):
   gc.collect()
 
 # Training functions
-TRAIN_KNN_K_CANDIDATES = [k for k in range(1,2)]
+TRAIN_KNN_K_CANDIDATES = [1, 3, 5, 7]
 
 def try_train_configs(data_config):
   arch = Arch(data_config=data_config, df=None, 

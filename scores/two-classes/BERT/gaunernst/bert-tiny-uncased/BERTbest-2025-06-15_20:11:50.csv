@@ -1,0 +1,9 @@
+data_unit,class_list,difficulty,num_classes,class_name_list,PH2,PH3,reducer,kernel,num_components,batch_size,num_epochs,loadable,accuracy,top2accuracy,macro_f1,macro_precision,macro_recall
+Spf,two-classes,unspecified,2,"['a', 'b']",True,True,pca,None,4,1024,7200,gaunernst/bert-tiny-uncased,0.908203125,1,0.9081999732962023,0.9083965388313214,0.9085648854961832
+Spf,two-classes,unspecified,2,"['a', 'b']",True,False,None,None,75,1024,7200,gaunernst/bert-tiny-uncased,0.982421875,1,0.9824212714822516,0.9826254826254825,0.982824427480916
+Spf,two-classes,unspecified,2,"['a', 'b']",False,True,pca,None,4,1024,7200,gaunernst/bert-tiny-uncased,0.919921875,1,0.9197599526021061,0.9210001992428771,0.9193740458015267
+Spf,two-classes,unspecified,2,"['a', 'b']",False,False,None,None,72,1024,7200,gaunernst/bert-tiny-uncased,0.994140625,1,0.9941379191903001,0.9941002274427195,0.9941832061068703
+Spv,two-classes,unspecified,2,"['a', 'b']",True,True,pca,None,4,1024,28800,gaunernst/bert-tiny-uncased,0.8372093023255814,1,0.8372093023255814,0.8376623376623377,0.8376623376623377
+Spv,two-classes,unspecified,2,"['a', 'b']",True,False,None,None,75,1024,28800,gaunernst/bert-tiny-uncased,0.8604651162790697,1,0.8597826086956522,0.8722222222222222,0.8625541125541125
+Spv,two-classes,unspecified,2,"['a', 'b']",False,True,pca,None,4,1024,28800,gaunernst/bert-tiny-uncased,0.8604651162790697,1,0.8597826086956522,0.8640350877192983,0.8593073593073592
+Spv,two-classes,unspecified,2,"['a', 'b']",False,False,None,None,72,1024,28800,gaunernst/bert-tiny-uncased,0.9767441860465116,1,0.9766937669376694,0.9782608695652174,0.9761904761904762
