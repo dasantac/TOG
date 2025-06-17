@@ -184,8 +184,8 @@ def try_data_configs(data_unit, label_col, class_list, class_numeric_list,
 
   gc.collect()
 
-def find_best(data_unit, label_col, class_list, class_numeric_list, 
-              num_classes, difficulty):
+def find_best(data_unit, label_col, class_list, class_numeric_list=None, 
+              num_classes=None, difficulty=None):
   
   try_data_configs(data_unit, label_col, class_list, class_numeric_list, 
               num_classes, difficulty)

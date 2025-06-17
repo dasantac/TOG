@@ -5,6 +5,8 @@
 bin/
 data/
 media/gen/
+notes/
+.obsidian/
 
 # Python extras
 *__pycache__/

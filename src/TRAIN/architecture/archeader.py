@@ -33,19 +33,27 @@ class Arch():
     self.data_config = data_config
     self.data_unit = data_config["data_unit"]
     self.label_col = data_config["label_col"]
-    self.class_list = data_config["class_list"]
-    if self.class_list == 'specified':
-      self.difficulty = data_config["difficulty"]
-      self.class_numeric_list = data_config["class_numeric_list"]
-      self.num_classes = data_config["num_classes"]
-    else:
+    if self.label_col == sup.active_hand_col:
+      self.class_list = self.label_col
       self.difficulty = "unspecified"
-      self.class_numeric_list = sup.get_class_numeric_list(
-                                  sup.get_class_list(data_config["class_list"])
-                                  )
-      self.num_classes = len(self.class_numeric_list)
+      self.class_numeric_list = [0, 1]
+      self.num_classes = 2
+      self.class_name_list = ['inactive', 'active']
+    else:
+      self.class_list = data_config["class_list"]
+      if self.class_list == 'specified':
+        self.difficulty = data_config["difficulty"]
+        self.class_numeric_list = data_config["class_numeric_list"]
+        self.num_classes = data_config["num_classes"]
+      else:
+        self.difficulty = "unspecified"
+        self.class_numeric_list = sup.get_class_numeric_list(
+                                    sup.get_class_list(data_config["class_list"])
+                                    )
+        self.num_classes = len(self.class_numeric_list)
 
-    self.class_name_list = sup.get_class_name_list(self.class_numeric_list)
+      self.class_name_list = sup.get_class_name_list(self.class_numeric_list)
+      
     self.label_map = {label : i for i, label in 
                       enumerate(self.class_numeric_list)}
     self.mapped_class_numeric_list = [self.label_map[l] 

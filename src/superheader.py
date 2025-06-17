@@ -16,7 +16,7 @@ warnings.filterwarnings(
 ################################### Classes ###################################
 
 big_classes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',  \
-                'll', 'm', 'n', 'ñ', 'o', 'p', 'q', 'r', 'rr', 's', 't', 'u',\
+                'll', 'm', 'n', 'o', 'p', 'q', 'r', 'rr', 's', 't', 'u',\
                 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4', '5', '6', '8', \
                 '9', '10']
 bad_classes = ['0', '7']
@@ -48,7 +48,7 @@ def get_class_list(list_name):
     class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'l']
   elif list_name == "alpha-classes":
     class_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',  \
-                  'll', 'm', 'n', 'ñ', 'o', 'p', 'q', 'r', 'rr', 's', 't', 'u',\
+                  'll', 'm', 'n', 'o', 'p', 'q', 'r', 'rr', 's', 't', 'u',\
                   'v', 'w', 'x', 'y', 'z']
     
   return class_list
