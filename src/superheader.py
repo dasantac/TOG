@@ -37,7 +37,7 @@ NUM_CLASSES = "all-classes"
 
 def get_class_list(list_name):
   if list_name == "all-classes":
-    class_list = ALL_CLASSES_LIST
+    class_list = big_classes
   elif list_name == "two-classes":
     class_list = ['a', 'b']
   elif list_name == "three-classes":
