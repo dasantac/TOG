@@ -9,17 +9,16 @@ videos using Goggle's Mediapipe framework.
 import os
 import sys
 from dotenv import load_dotenv
-load_dotenv(dotenv_path="../project.env")
+load_dotenv(dotenv_path="../../../project.env")
 sys.path.append(os.environ["PYTHONPATH"])
 
 # Load project-wide variables
 import superheader as sup
-import PH1header as ph1
+import PH1.PH1header as ph1
 
 ### Setup ###
 # Video to frame
 import cv2
-NUM_FRAMES_EXTRACTED_PER_VIDEO_HALF = 6
 
 # Frame to landmarks
 import mediapipe as mp
@@ -182,3 +181,15 @@ def extract_landmarks_per_frame(row):
    
   video_df = pd.DataFrame(results, columns=new_column_names)
   return video_df
+
+
+def live(frame):
+  # Mediapipe setup
+  image_mp = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+  image_mp = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_mp)
+
+  # Mediapipe extraction
+  pose_landmark_columns_list = extract_pose(image_mp)
+  hand_landmark_columns_list, handedness_id_list = extract_hands(image_mp)
+  
+  return hand_landmark_columns_list, handedness_id_list, pose_landmark_columns_list

@@ -18,7 +18,7 @@ sup.create_dir_if_not_exists(sup.PH1_DATA_ROOT)
 ###############################################################################
 ####################### nltk corpus to pandas dataframe #######################
 
-from file_reading.fs2df import get_tags as get_tags
+from PH1.file_reading.fs2df import get_tags as get_tags
 
 ####################### nltk corpus to pandas dataframe #######################
 ###############################################################################
@@ -26,7 +26,7 @@ from file_reading.fs2df import get_tags as get_tags
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # Step 1: Video to landmarks  # # # # # # # # # # # # #
 
-import feature_extraction.ph1step1 as step1
+import PH1.feature_extraction.ph1step1 as step1
 
 # # # # # # # # # # # # # Step 1: Video to landmarks  # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
