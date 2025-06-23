@@ -316,7 +316,7 @@ BERT_REDUCER_KERNEL_CANDIDATES = []
 BERT_lr_CANDIDATES = [1e-5]
 BERT_optimizer_CANDIDATES = [optim.AdamW]
 BERT_loss_fn_CANDIDATES = [nn.CrossEntropyLoss]
-BERT_base_num_epochs = 15
+BERT_base_num_epochs = 111
 
 # Training functions
 def train_one_model(args):
@@ -330,6 +330,7 @@ def train_one_model(args):
   print(model.accuracy)
   keep_scores_bert(model)
   update_best(model)
+  model.keep()
   clean_model(model)
 
 def try_train_configs(data_config,
