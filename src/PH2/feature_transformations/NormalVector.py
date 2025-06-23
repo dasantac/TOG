@@ -11,7 +11,7 @@ sys.path.append(os.environ["PYTHONPATH"])
 
 # Load project-wide variables
 import superheader as sup
-import PH2header as ph2
+import PH2.PH2header as ph2
 
 import numpy as np
 
