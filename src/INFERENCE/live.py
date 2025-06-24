@@ -76,11 +76,8 @@ def get_features_from_frame(frame, model, PH2=False, PH3=False, scaler=None, red
     hand_landmark_columns_list, handedness_id_list, pose_landmark_columns_list = ph1.live(frame)
 
     if len(pose_landmark_columns_list) == 0:
-        cv2.putText(frame, "No person detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
         return -1
     elif len(hand_landmark_columns_list) == 0:
-        cv2.putText(frame, "No hand detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-        cv2.imshow('Webcam', frame)
         return -1
     else:
         if PH2:
@@ -101,8 +98,6 @@ def get_features_from_frame(frame, model, PH2=False, PH3=False, scaler=None, red
                 active_hand = pick_hand_ph1(hand_landmark_columns_list, handedness_id_list, pose_landmark_columns_list)
 
         if active_hand == -1:
-            cv2.putText(frame, "No active hand detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-            cv2.imshow('Webcam', frame)
             return -1
         else:
             if PH2 or PH3:
@@ -132,7 +127,8 @@ def _run_webcam_loop(model, PH2=False, PH3=False, scaler=None, reducer=None, dat
         features = get_features_from_frame(frame, model, PH2, PH3, scaler, reducer)
 
         if features == -1:
-            print("bad frame")
+            cv2.putText(frame, "No detection", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+            cv2.imshow('Webcam', frame)
         else:
             hand_landmarks, x = features
 
