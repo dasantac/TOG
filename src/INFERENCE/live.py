@@ -169,22 +169,22 @@ model_paths = {
     "all-classes" : {
         sup.DATA_S_PF : {
             True : {
-                True : 'True-True-pca--n15-lr1e-05-ep3996s0.8905265406386842.pth',
-                False : 'True-False---n75-lr1e-05-ep3000s0.9214995193848126.pth'
+                True : 'True-True-pca--n15-lr1e-05-ep2500s0.8883904731389511.pth',
+                False : 'True-False---n75-lr1e-05-ep2500s0.9284417387589448.pth'
             },
             False : {
-                True : 'False-True-pca--n15-lr1e-05-ep3000s0.9569582398803802.pth',
-                False : 'False-False---n72-lr1e-05-ep6000s0.9690270212538716.pth'
+                True : 'False-True-pca--n15-lr1e-05-ep2500s0.9565310263804336.pth',
+                False : 'False-False---n72-lr1e-05-ep2500s0.9669977571291253.pth'
             }
         },
         sup.DATA_S_PV : {
             True : {
-                True : 'True-True-pca--n15-lr1e-05-ep15984s0.649167733674776.pth',
-                False : 'True-False---n75-lr1e-05-ep15984s0.6594110115236875.pth'
+                True : 'True-True-pca--n15-lr1e-05-ep2000s0.615877080665813.pth',
+                False : 'True-False---n75-lr1e-05-ep2000s0.6248399487836107.pth'
             },
             False : {
-                True : 'False-True-pca--n15-lr1e-05-ep15984s0.8284250960307298.pth',
-                False : 'False-False---n72-lr1e-05-ep15984s0.8911651728553137.pth'
+                True : 'False-True-pca--n15-lr1e-05-ep2000s0.8220230473751601.pth',
+                False : 'False-False---n72-lr1e-05-ep2000s0.8898847631241997.pth'
             }
         }
     }
