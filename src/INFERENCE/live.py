@@ -11,6 +11,7 @@ import PH1.feature_extraction.ph1step1 as ph1
 import PH2.PH2header as ph2
 import PH3.PH3header as ph3
 from TRAIN.architecture.BERT import bert
+from TRAIN.architecture.KNN import knn
 
 import pickle
 import numpy as np
@@ -70,7 +71,11 @@ def pick_hand_ph3(reduced_features_list):
     return 0
 
 def predict_sign(model, active_selected_features):
-    return model.me(active_selected_features)
+    if model.arch == sup.TRAIN_BERT_CODE:
+        return model.me(active_selected_features)
+    elif model.arch == sup.TRAIN_KNN_CODE:
+        print(active_selected_features)
+        return model.me.predict(active_selected_features)
 
 def get_features_from_frame(frame, model, PH2=False, PH3=False, scaler=None, reducer=None):
     hand_landmark_columns_list, handedness_id_list, pose_landmark_columns_list = ph1.live(frame)
@@ -105,7 +110,10 @@ def get_features_from_frame(frame, model, PH2=False, PH3=False, scaler=None, red
             else:
                 x = features[active_hand] + pose_landmark_columns_list[0]
 
-            x = torch.Tensor(np.array(x).reshape(1, 1, -1))
+            if model.arch == sup.TRAIN_BERT_CODE:
+                x = torch.Tensor(np.array(x).reshape(1, 1, -1))
+            elif model.arch == sup.TRAIN_KNN_CODE:
+                x = np.array(x).reshape(1, -1)
             return hand_landmark_columns_list[active_hand], x
 
 def _run_webcam_loop(model, PH2=False, PH3=False, scaler=None, reducer=None, data_unit=None):
@@ -149,8 +157,12 @@ def _run_webcam_loop(model, PH2=False, PH3=False, scaler=None, reducer=None, dat
             else:
                 logits = predict_sign(model, x)
 
-            preds = logits.argmax(dim=1).cpu()
-            tag = sup.NUMBERS_TO_CLASSES[preds[0].item()]
+            if model.arch == sup.TRAIN_BERT_CODE:
+                preds = logits.argmax(dim=1).cpu()
+                pred = preds[0].item()
+            elif model.arch == sup.TRAIN_KNN_CODE:
+                pred = logits[0]
+            tag = sup.NUMBERS_TO_CLASSES[pred]
             draw_image(frame, hand_landmarks, tag)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -162,10 +174,10 @@ def _run_webcam_loop(model, PH2=False, PH3=False, scaler=None, reducer=None, dat
 
 
 
-model_path_root = '/Users/diego/Desktop/iteso/TOG/bin/gen/TRAIN/all-classes/37/BERT/'
+model_path_root = '/Users/diego/Desktop/iteso/TOG/bin/gen/TRAIN/all-classes/37/'
 bertmini_path = 'gaunernst/bert-mini-uncased/'
 
-model_paths = {
+bert_model_paths = {
     "all-classes" : {
         sup.DATA_S_PF : {
             True : {
@@ -190,12 +202,15 @@ model_paths = {
     }
 }
 
+knn_model_path = 'False-False---n72-k1-s0.9407241268824095.pkl'
+
 def classify_webcam_image(inference_config):
 
     TRAIN_classes = inference_config["TRAIN_classes"]
     data_unit = inference_config["data_unit"]
     PH2 = inference_config.get("PH2", False)
     PH3 = inference_config.get("PH3", False)
+    arch = inference_config.get("arch", sup.TRAIN_BERT_CODE)
 
     # --- Phase-dependent config ---
     if PH3:
@@ -218,24 +233,35 @@ def classify_webcam_image(inference_config):
         "n" : n_components,
     }
 
-    train_config = {
-        "arch" : sup.TRAIN_BERT_CODE,
-        "device" : bert.device,
-        "loadable" : bert.BERT_MINI,
-        "optimizer" : optim.AdamW,
-        "lr" : 1e-5,
-        "weight_decay" : 0,
-        "loss_fn" : nn.CrossEntropyLoss,
-        "num_epochs" : 3000
-    }
+    if arch == sup.TRAIN_BERT_CODE:
+        train_config = {
+            "arch" : sup.TRAIN_BERT_CODE,
+            "device" : bert.device,
+            "loadable" : bert.BERT_MINI,
+            "optimizer" : optim.AdamW,
+            "lr" : 1e-5,
+            "weight_decay" : 0,
+            "loss_fn" : nn.CrossEntropyLoss,
+            "num_epochs" : 3000
+        }
 
-    model = bert.BERT(data_config=data_config, df=None, train_config=train_config)
+        model = bert.BERT(data_config=data_config, df=None, train_config=train_config)
 
-    model_path_file = model_paths[TRAIN_classes][data_unit][PH2][PH3]
-    full_model_path = os.path.join(model_path_root, data_unit, bertmini_path, model_path_file)
-    model.me.load_state_dict(torch.load(full_model_path, map_location='cpu'))
-    model.me.eval()
-    model.me.to('cpu')
+        model_path_file = bert_model_paths[TRAIN_classes][data_unit][PH2][PH3]
+        full_model_path = os.path.join(model_path_root, sup.TRAIN_BERT_CODE, data_unit, bertmini_path, model_path_file)
+        model.me.load_state_dict(torch.load(full_model_path, map_location='cpu'))
+        model.me.eval()
+        model.me.to('cpu')
+
+    elif arch == sup.TRAIN_KNN_CODE:
+        train_config = {
+            "arch" : sup.TRAIN_KNN_CODE,
+            "k" : 1
+        }
+
+        model = knn.KNN(data_config=data_config, df=None, train_config=train_config)
+        model.fit()
+
 
     # --- Load scaler and reducer if needed ---
     scaler = reducer = None
