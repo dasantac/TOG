@@ -165,6 +165,7 @@ class Arch():
                   if self.label_col == sup.active_hand_col \
                   else sup.active_hand_col
     
+    self.full_df = full_df
     self.df = full_df.copy()
     self.df = self.__filter_class_list()
     self.df = self.__filter_data_unit()

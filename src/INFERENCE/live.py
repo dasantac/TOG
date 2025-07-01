@@ -41,34 +41,41 @@ def draw_image(frame, original_landmarks, tag):
     cv2.putText(frame_w_rect, f'Predicted Class: {tag}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, green, 2, cv2.LINE_AA)
     cv2.imshow('Webcam', frame_w_rect)
 
-def pick_hand_ph1(hand_landmark_columns_list, 
-                  handedness_id_list, 
-                  pose_landmark_columns_list):
-  
-    # if only one option, with a handedness prediction and a confidence score
-    if len(handedness_id_list) == 2:
-        return 0
+def pick_hand_ph1(features, 
+                  handedness_id_list):
 
     # default
     return 0
 
-def pick_hand_ph2(transformed_landmark_list):
-  
-    # if only one option, with a handedness prediction and a confidence score
-    if len(transformed_landmark_list) == 1 and len(transformed_landmark_list[0]) == 1:
-        return 0
+def pick_hand_ph2(features, 
+                  handedness_id_list):
 
     # default
     return 0
 
-def pick_hand_ph3(reduced_features_list):
-  
-    # if only one option, with a handedness prediction and a confidence score
-    if len(reduced_features_list) == 1 and len(reduced_features_list[0]) == 1:
-        return 0
+def pick_hand_ph3(features, 
+                  handedness_id_list):
 
     # default
     return 0
+
+def ph1_scale(model, hand_list, pose_list):
+    result = []
+    for pose in pose_list:
+        for hand in hand_list:
+            data = hand+pose
+            tostd = np.array(data).reshape(1,-1)
+            result.append(model.scaler.transform(tostd))
+    return result
+
+def ph2_scale(model, data):
+    result = []
+    for pose in data:
+        for hand in data[pose]:
+            data = hand
+            tostd = np.array(data).reshape(1,-1)
+            result.append(model.scaler.transform(tostd))
+    return result
 
 def predict_sign(model, active_selected_features):
     if model.arch == sup.TRAIN_BERT_CODE:
@@ -77,7 +84,7 @@ def predict_sign(model, active_selected_features):
         print(active_selected_features)
         return model.me.predict(active_selected_features)
 
-def get_features_from_frame(frame, model, PH2=False, PH3=False, scaler=None, reducer=None):
+def get_features_from_frame(frame, model, data_unit, PH2=False, PH3=False, scaler=None, reducer=None):
     hand_landmark_columns_list, handedness_id_list, pose_landmark_columns_list = ph1.live(frame)
 
     if len(pose_landmark_columns_list) == 0:
@@ -85,38 +92,59 @@ def get_features_from_frame(frame, model, PH2=False, PH3=False, scaler=None, red
     elif len(hand_landmark_columns_list) == 0:
         return -1
     else:
-        if PH2:
-            transformed = ph2.live(hand_landmark_columns_list, handedness_id_list, pose_landmark_columns_list)
-            if PH3:
-                features = ph3.live_full(scaler, reducer, transformed)
-                active_hand = pick_hand_ph3(features)
+        if data_unit == sup.DATA_S_PF:
+            if PH2:
+                transformed = ph2.live(hand_landmark_columns_list, handedness_id_list, pose_landmark_columns_list)
+                if PH3:
+                    reduced = ph3.live_full(scaler, reducer, transformed)
+                    active_hand = pick_hand_ph3(reduced, handedness_id_list)
+                    features = reduced[0][active_hand][4:]
+                else:
+                    standardized = ph2_scale(model, transformed)
+                    active_hand = pick_hand_ph2(standardized, handedness_id_list)
+                    features = standardized[0][active_hand]
             else:
-                features = transformed
-                active_hand = pick_hand_ph2(features)
-        else:
-            if PH3:
-                features = ph3.live(scaler, reducer, hand_landmark_columns_list,
-                                handedness_id_list, pose_landmark_columns_list)
-                active_hand = pick_hand_ph3(features)
-            else: 
-                features = hand_landmark_columns_list + pose_landmark_columns_list
-                active_hand = pick_hand_ph1(hand_landmark_columns_list, handedness_id_list, pose_landmark_columns_list)
+                if PH3:
+                    reduced = ph3.live(scaler, reducer, hand_landmark_columns_list,
+                                    handedness_id_list, pose_landmark_columns_list)
+                    active_hand = pick_hand_ph3(reduced, handedness_id_list)
+                    features = reduced[0][active_hand][4:]
+                else:
+                    standardized = ph1_scale(model, hand_landmark_columns_list, pose_landmark_columns_list)
+                    
+                    active_hand = pick_hand_ph1(standardized, handedness_id_list)
+                    features = standardized[0][active_hand]
+        elif data_unit == sup.DATA_S_PV:
+            if PH2:
+                transformed = ph2.live(hand_landmark_columns_list, handedness_id_list, pose_landmark_columns_list)
+                if PH3:
+                    reduced = ph3.live_full(scaler, reducer, transformed)
+                    active_hand = pick_hand_ph3(reduced, handedness_id_list)
+                    features = reduced[0][active_hand][4:]
+                else:
+                    active_hand = pick_hand_ph2(transformed, handedness_id_list)
+                    features = transformed[0][active_hand][4:]
+            else:
+                if PH3:
+                    reduced = ph3.live(scaler, reducer, hand_landmark_columns_list,
+                                    handedness_id_list, pose_landmark_columns_list)
+                    active_hand = pick_hand_ph3(reduced, handedness_id_list)
+                    features = reduced[0][active_hand][4:]
+                else:
+                    raw = [[hand+pose for hand in  hand_landmark_columns_list] for pose in pose_landmark_columns_list]
+                    active_hand = pick_hand_ph1(raw, handedness_id_list)
+                    features = raw[0][active_hand]
 
         if active_hand == -1:
             return -1
         else:
-            if PH2 or PH3:
-                x = features[0][active_hand][4:]
+            if model.arch == sup.TRAIN_BERT_CODE and data_unit == sup.DATA_S_PF:
+                x = torch.Tensor(np.array(features).reshape(1, 1, -1))
             else:
-                x = features[active_hand] + pose_landmark_columns_list[0]
-
-            if model.arch == sup.TRAIN_BERT_CODE:
-                x = torch.Tensor(np.array(x).reshape(1, 1, -1))
-            elif model.arch == sup.TRAIN_KNN_CODE:
-                x = np.array(x).reshape(1, -1)
+                x = np.array(features).reshape(1, -1)
             return hand_landmark_columns_list[active_hand], x
 
-def _run_webcam_loop(model, PH2=False, PH3=False, scaler=None, reducer=None, data_unit=None):
+def _run_webcam_loop(model, data_unit=None, PH2=False, PH3=False, scaler=None, reducer=None):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("Error: Could not open webcam.")
@@ -132,14 +160,13 @@ def _run_webcam_loop(model, PH2=False, PH3=False, scaler=None, reducer=None, dat
             print("Error: Could not read frame.")
             break
 
-        features = get_features_from_frame(frame, model, PH2, PH3, scaler, reducer)
+        features = get_features_from_frame(frame, model, data_unit, PH2, PH3, scaler, reducer)
 
         if features == -1:
             cv2.putText(frame, "No detection", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
             cv2.imshow('Webcam', frame)
         else:
             hand_landmarks, x = features
-
             if use_sequence:
                 x_seq.append(x)  # shape: [1, 1, D]
                 if len(x_seq) < seq_len:
@@ -151,8 +178,11 @@ def _run_webcam_loop(model, PH2=False, PH3=False, scaler=None, reducer=None, dat
                     x_seq.pop(0)
 
                 # Concatenate into [1, 12, D]
-                x_cat = torch.cat(x_seq, dim=1)
-                logits = predict_sign(model, x_cat)
+                x_cat = np.concatenate(x_seq, axis=1)
+                if not PH3:
+                    x_cat = model.scaler.transform(x_cat)
+                tomod = torch.Tensor(x_cat.reshape(1, 12, -1))
+                logits = predict_sign(model, tomod)
 
             else:
                 logits = predict_sign(model, x)
@@ -275,4 +305,4 @@ def classify_webcam_image(inference_config):
         with open(pca_path, 'rb') as f:
             reducer = pickle.load(f)
 
-    return  _run_webcam_loop(model, PH2=PH2, PH3=PH3, scaler=scaler, reducer=reducer, data_unit=data_unit)
+    return  _run_webcam_loop(model,  data_unit=data_unit, PH2=PH2, PH3=PH3, scaler=scaler, reducer=reducer)
